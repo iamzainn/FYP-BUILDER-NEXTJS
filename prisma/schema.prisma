@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id           Int         @id @default(autoincrement())
+  name         String      @db.VarChar(255)
+  email        String      @unique(map: "email") @db.VarChar(255)
+  password     String?     @db.VarChar(255)
+  authType     AuthType    @default(email) @map("auth_type")
+  clerkId      String?     @map("clerk_id") @db.VarChar(255)
+  profileImage String?     @map("profile_image") @db.VarChar(255)
+  createdAt    DateTime?   @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime?   @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  userStores   UserStore[]
+
+  @@index([email], map: "idx_email")
+  @@index([clerkId], map: "idx_clerk_id")
+  @@map("users")
+}
+
+model UserStore {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @map("user_id")
+  storeName    String    @map("store_name") @db.VarChar(255)
+  storeId      String    @map("store_id") @db.VarChar(255)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.DateTime(0)
+  lastAccessed DateTime? @default(now()) @updatedAt @map("last_accessed") @db.DateTime(0)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storeName], map: "user_id")
+  @@index([userId], map: "idx_user_id")
+  @@map("user_stores")
+}
+
+enum AuthType {
+  email
+  google
+  clerk
+}
