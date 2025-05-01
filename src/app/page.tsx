@@ -1,21 +1,21 @@
 import Link from 'next/link';
 
 
-import { auth, currentUser } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation';
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 export default async function HomePage() {
-  const { userId } = await auth()
+  
 
-  if (!userId) {
-    return <div>Sign in to view this page</div>
+ 
+  const { userId } = await auth();
+  console.log("i am here");
+  console.log(userId);
+
+  // If user is authenticated, redirect to dashboard
+  if (userId) {
+    redirect("/dashboard");
   }
 
-  // Get the Backend API User object when you need access to the user's information
-  const user = await currentUser()
-
-  if (user) {
-    redirect('/dashboard')
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">

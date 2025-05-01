@@ -182,6 +182,7 @@ class ApiService {
     storeConfig?: Record<string, unknown>;
   }) {
     const token = localStorage.getItem("auth_token");
+    console.log("token", token);
 
     const response = await fetch(`${API_BASE_URL}/user/websites`, {
       method: "POST",

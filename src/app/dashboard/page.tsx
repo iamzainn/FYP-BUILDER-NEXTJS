@@ -1,62 +1,53 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { ApiService } from '@/services/apiService';
+import { redirect } from 'next/navigation';
+import { auth } from '@clerk/nextjs/server';
+import prisma from '../../lib/prisma';
 
-interface Website {
-  id: number;
-  store_name: string;
-  store_id: string;
-  last_accessed: string;
-}
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const [websites, setWebsites] = useState<Website[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  const [mounted, setMounted] = useState(false);
+export default async function DashboardPage() {
+  // Get auth session and user
+  const { userId }  = await auth();
 
-  useEffect(() => {
-    setMounted(true);
-    
-    const fetchUserData = async () => {
-      try {
-        // Fetch user profile using ApiService
-        const userData = await ApiService.getUserProfile();
-        setUser(userData);
+  console.log("Auth userId (clerk):", userId);
 
-        // Fetch user's websites using ApiService
-        const response = await ApiService.getUserWebsites();
-        
-        // Ensure websites is always an array
-        const websitesData = response.stores || [];
-        console.log('Websites data received:', websitesData);
-        
-        setWebsites(websitesData);
-      } catch (err: unknown) {
-        // Convert to a proper error type
-        const error = err instanceof Error ? err : new Error(String(err));
-        
-        // If 401 unauthorized, redirect to login
-        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-          router.push('/login');
-          return;
-        }
-        setError(error.message || 'An error occurred');
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const dbUser = await prisma.user.findUnique({
+    where: {
+      clerkId: userId!
+    }
+  });
 
-    fetchUserData();
-  }, [router]);
+  console.log("Database user:", JSON.stringify(dbUser, null, 2));
 
+
+  const userStore = await prisma.userStore.findMany({
+    where: {
+      userId: dbUser?.id
+    }
+  });
+
+  if (!dbUser || !userId) {
+    console.log("No user found in database, redirecting to sign-in");
+    redirect('/sign-in');
+  }
+  
+  
+  
+
+  
+ 
+ 
+  
+
+
+  
+  
+ 
+  
+
+  
+  
+
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -66,26 +57,6 @@ export default function DashboardPage() {
     });
   };
 
-  const handleLogout = async () => {
-    try {
-      await ApiService.logout();
-      router.push('/login');
-    } catch (err) {
-      console.error('Logout failed:', err);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-50 via-blue-50 to-white">
-        <div className="flex flex-col items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-          <p className="mt-4 text-indigo-600 font-medium">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-blue-50 to-white relative">
       {/* Background decoration - improved blur effects */}
@@ -93,57 +64,8 @@ export default function DashboardPage() {
       <div className="absolute top-60 right-20 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-40 left-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob animation-delay-4000"></div>
       
-      {/* Navigation */}
-      <nav className="relative bg-white shadow-md border-b border-gray-100 backdrop-blur-sm bg-opacity-80 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-20">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center">
-                <div className="relative h-10 w-10 mr-3">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full blur-sm opacity-40"></div>
-                  <Image 
-                    src="/logo.png" 
-                    alt="Live Webify Logo" 
-                    width={40} 
-                    height={40} 
-                    className="relative p-0.5 bg-white rounded-full"
-                  />
-                </div>
-                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-                  BuilderAI
-                </span>
-              </Link>
-            </div>
-            
-            <div className="flex items-center gap-6">
-              <div className={`flex items-center transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-                <div className="relative flex items-center">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white font-medium mr-2 shadow-md">
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <span className="text-gray-700 font-medium">
-                    {user?.name || 'User'}
-                  </span>
-                </div>
-              </div>
-              
-              <button
-                onClick={handleLogout}
-                className="flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 group focus:outline-none"
-              >
-                <span>Log out</span>
-                <svg className="ml-1 h-5 w-5 transform group-hover:translate-x-1 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414a1 1 0 00-.293-.707L11.414 2.414A1 1 0 0010.707 2H3zm0 2v10h12V7.414L10.414 4H3z" clipRule="evenodd" />
-                  <path fillRule="evenodd" d="M6 10a1 1 0 011-1h2.586l-1.293-1.293a1 1 0 111.414-1.414l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L9.586 11H7a1 1 0 01-1-1z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main content */}
-      <main className={`max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div className="mb-6 sm:mb-0">
             <h1 className="text-3xl font-bold text-gray-900">My Websites</h1>
@@ -160,21 +82,9 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Error message */}
-        {error && (
-          <div className="mt-8 animate-fadeIn bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md p-4 shadow-md">
-            <div className="flex">
-              <svg className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Websites list */}
+        
         <div className="mt-10">
-          {websites.length === 0 ? (
+          {userStore.length === 0 ? (
             <div className="bg-white shadow-xl overflow-hidden rounded-xl p-10 text-center border border-gray-100 backdrop-blur-sm bg-opacity-80 animate-fadeIn transform transition-all duration-500 hover:shadow-2xl">
               <div className="w-20 h-20 mx-auto rounded-full bg-indigo-50 flex items-center justify-center">
                 <svg className="h-10 w-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -197,7 +107,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {websites.map((website) => (
+              {userStore.map((website) => (
                 <div
                   key={website.id}
                   className="bg-white overflow-hidden shadow-xl rounded-xl border border-gray-100 backdrop-blur-sm bg-opacity-80 transform transition-all duration-300 hover:shadow-2xl hover:scale-105"
@@ -211,19 +121,19 @@ export default function DashboardPage() {
                         </svg>
                       </div>
                       <div className="ml-4">
-                        <h3 className="text-xl font-bold text-gray-900 truncate">{website.store_name}</h3>
+                        <h3 className="text-xl font-bold text-gray-900 truncate">{website.storeName}</h3>
                         <div className="mt-1 flex items-center text-sm text-gray-500">
                           <svg className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                           </svg>
-                          <span>Last edited: {formatDate(website.last_accessed)}</span>
+                          <span>Last edited: {formatDate(website.lastAccessed?.toString() || '')}</span>
                         </div>
                       </div>
                     </div>
                     
                     <div className="mt-6 flex justify-between items-center border-t border-gray-100 pt-4">
                       <Link
-                        href={`/edit/${website.store_name}`}
+                        href={`/edit/${website.storeName}`}
                         className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200 group"
                       >
                         <svg className="mr-2 h-5 w-5 transform group-hover:-translate-y-0.5 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -234,7 +144,7 @@ export default function DashboardPage() {
                       </Link>
                       
                       <Link
-                        href={`/admin/${website.store_id}`}
+                        href={`/admin/${website.storeId}`}
                         className="flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200 group"
                       >
                         <svg className="mr-2 h-5 w-5 transform group-hover:-translate-y-0.5 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -244,7 +154,7 @@ export default function DashboardPage() {
                       </Link>
                       
                       <Link
-                        href={`/home/${website.store_name}`}
+                        href={`/home/${website.storeName}`}
                         className="flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200 group"
                       >
                         <svg className="mr-2 h-5 w-5 transform group-hover:-translate-y-0.5 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -263,38 +173,7 @@ export default function DashboardPage() {
       </main>
       
       {/* Add animation keyframes */}
-      <style jsx global>{`
-        @keyframes blob {
-          0% {
-            transform: scale(1) translate(0px, 0px);
-          }
-          33% {
-            transform: scale(1.1) translate(30px, -50px);
-          }
-          66% {
-            transform: scale(0.9) translate(-20px, 20px);
-          }
-          100% {
-            transform: scale(1) translate(0px, 0px);
-          }
-        }
-        @keyframes fadeIn {
-          0% { opacity: 0; transform: translateY(-10px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-blob {
-          animation: blob 15s infinite ease-in-out;
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
+      
     </div>
   );
 }

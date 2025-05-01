@@ -10,14 +10,13 @@ datasource db {
 
 model User {
   id           Int         @id @default(autoincrement())
-  name         String      @db.VarChar(255)
+  firstName String?
+  lastName String?
   email        String      @unique(map: "email") @db.VarChar(255)
-  password     String?     @db.VarChar(255)
-  authType     AuthType    @default(email) @map("auth_type")
-  clerkId      String?     @map("clerk_id") @db.VarChar(255)
   profileImage String?     @map("profile_image") @db.VarChar(255)
   createdAt    DateTime?   @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt    DateTime?   @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  clerkId      String      @unique(map: "clerk_id") @db.VarChar(255)
   userStores   UserStore[]
 
   @@index([email], map: "idx_email")
@@ -37,10 +36,4 @@ model UserStore {
   @@unique([userId, storeName], map: "user_id")
   @@index([userId], map: "idx_user_id")
   @@map("user_stores")
-}
-
-enum AuthType {
-  email
-  google
-  clerk
 }
