@@ -181,16 +181,12 @@ class ApiService {
     storeName: string;
     storeConfig?: Record<string, unknown>;
   }) {
-    const token = localStorage.getItem("auth_token");
-    console.log("token", token);
-
-    const response = await fetch(`${API_BASE_URL}/user/websites`, {
+    // No need for token with Clerk as it handles authentication via cookies
+    const response = await fetch(`/api/websites`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: token ? `Bearer ${token}` : "",
       },
-      credentials: "include", // Keep for backward compatibility
       body: JSON.stringify(data),
     });
 

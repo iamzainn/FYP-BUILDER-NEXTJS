@@ -10,13 +10,13 @@ datasource db {
 
 model User {
   id           Int         @id @default(autoincrement())
-  firstName String?
-  lastName String?
   email        String      @unique(map: "email") @db.VarChar(255)
   profileImage String?     @map("profile_image") @db.VarChar(255)
   createdAt    DateTime?   @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt    DateTime?   @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
   clerkId      String      @unique(map: "clerk_id") @db.VarChar(255)
+  firstName    String?
+  lastName     String?
   userStores   UserStore[]
 
   @@index([email], map: "idx_email")
@@ -31,6 +31,7 @@ model UserStore {
   storeId      String    @map("store_id") @db.VarChar(255)
   createdAt    DateTime? @default(now()) @map("created_at") @db.DateTime(0)
   lastAccessed DateTime? @default(now()) @updatedAt @map("last_accessed") @db.DateTime(0)
+  store_config Json?
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, storeName], map: "user_id")

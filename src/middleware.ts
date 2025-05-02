@@ -11,13 +11,10 @@ const isPublicRoute = createRouteMatcher([
   '/contact', 
   '/privacy', 
   '/terms', 
-  '/api/webhooks(.*)',
-  '/api/(.*)'
+  '/api/webhooks(.*)'
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-
-  
   // For protected routes, ensure user is authenticated
   if (!isPublicRoute(req)) {
     await auth.protect()
@@ -35,7 +32,11 @@ export default clerkMiddleware(async (auth, req) => {
 //   ],
 // }
 
-
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+  matcher: [
+    // Include all paths, especially API routes
+    '/(.*)',
+    // Exclude static assets and public files
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)'
+  ],
 }
