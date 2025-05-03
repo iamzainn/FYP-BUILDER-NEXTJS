@@ -3,13 +3,14 @@ import Link from 'next/link';
 
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { Header } from '../components/layout';
+
 export default async function HomePage() {
   
 
  
   const { userId } = await auth();
-  console.log("i am here");
-  console.log(userId);
+
 
   // If user is authenticated, redirect to dashboard
   if (userId) {
@@ -19,7 +20,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
-     
+     <Header />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden pt-10 pb-20 sm:pt-16 lg:pt-8 lg:pb-28 xl:pt-10 bg-gradient-to-br from-indigo-50 via-blue-50 to-white">

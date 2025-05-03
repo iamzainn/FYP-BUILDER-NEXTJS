@@ -1,31 +1,19 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@clerk/nextjs/server';
-import prisma from '../../lib/prisma';
+import { Header } from '@/components/layout';
+
+
+import { getUserDbId, getUserStore } from '@/lib/fn';
+
+
 
 
 export default async function DashboardPage() {
-  // Get auth session and user
-  const { userId }  = await auth();
-
-  console.log("Auth userId (clerk):", userId);
-
-  const dbUser = await prisma.user.findUnique({
-    where: {
-      clerkId: userId!
-    }
-  });
-
-  console.log("Database user:", JSON.stringify(dbUser, null, 2));
-
-
-  const userStore = await prisma.userStore.findMany({
-    where: {
-      userId: dbUser?.id
-    }
-  });
-
-  if (!dbUser || !userId) {
+  const { userId: clerkUserId }  = await auth();
+  const userDbId = await getUserDbId(clerkUserId!);
+  const userStore = await getUserStore(userDbId!.id);
+  if (!userDbId) {
     console.log("No user found in database, redirecting to sign-in");
     redirect('/sign-in');
   }
@@ -48,18 +36,11 @@ export default async function DashboardPage() {
   
 
   
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-blue-50 to-white relative">
-      {/* Background decoration - improved blur effects */}
+    <Header />
       <div className="absolute top-40 left-20 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob"></div>
       <div className="absolute top-60 right-20 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-40 left-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob animation-delay-4000"></div>
@@ -126,7 +107,7 @@ export default async function DashboardPage() {
                           <svg className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                           </svg>
-                          <span>Last edited: {formatDate(website.lastAccessed?.toString() || '')}</span>
+                         
                         </div>
                       </div>
                     </div>
