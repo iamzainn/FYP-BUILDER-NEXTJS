@@ -7,6 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     // Get the authenticated user from Clerk using currentUser
     const user = await currentUser();
+    console.log("user clerk ",user);
     
     if (!user || !user.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -19,22 +20,29 @@ export async function POST(request: NextRequest) {
       }
     });
     
+    console.log("dbUser ",dbUser);
     if (!dbUser) {
       return NextResponse.json({ message: "User not found in database" }, { status: 404 });
     }
     
     // Use the database user ID
     const userID = dbUser.id;
+    console.log("userID ",userID);
     
     // Parse the request body
     const body = await request.json();
+    console.log("body ",body);
     console.log('Request to create website from user:', userID, 'with data:', body);
     
     // Extract data from request body - handle both name and storeName formats
     const name = body.name || body.storeName;
+    console.log("name ",name);
     
     // Extract storeConfig for later saving if needed
     const storeConfig = body.storeConfig;
+    console.log("storeConfig ",storeConfig);
+    const subdomain = body.subdomain;
+    console.log("subdomain ",subdomain);
     
     // Validate input
     if (!name) {
@@ -48,6 +56,7 @@ export async function POST(request: NextRequest) {
         storeName: name
       }
     });
+    console.log("existingStore ",existingStore);
     
     if (existingStore) {
       return NextResponse.json({ message: 'You already have a store with this name' }, { status: 400 });
@@ -62,7 +71,8 @@ export async function POST(request: NextRequest) {
         userId: userID,
         storeName: name,
         storeId: storeId,
-        store_config: storeConfig || undefined
+        store_config: storeConfig || undefined,
+        subdomain: subdomain
       }
     });
     

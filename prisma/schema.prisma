@@ -29,6 +29,7 @@ model UserStore {
   userId       Int               @map("user_id")
   storeName    String            @map("store_name") @db.VarChar(255)
   storeId      String            @map("store_id") @db.VarChar(255)
+  subdomain    String            @unique @db.VarChar(255)
   createdAt    DateTime?         @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt    DateTime?         @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
   store_config Json?

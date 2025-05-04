@@ -1,15 +1,14 @@
-import Link from "next/link";
-import prisma from "@/lib/prisma";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import ProductsTable from "@/components/admin/ProductsTable";
 
-interface ProductsPageProps {
+import prisma from "@/lib/prisma";
+
+import CustomersTable from "@/components/admin/CustomersTable";
+
+interface CustomersPageProps {
   params: Promise<{ storeId: string }>;
   searchParams: Promise<{ page?: string; query?: string }>;
 }
 
-async function getProducts(
+async function getCustomers(
   storeId: string,
   page = 1,
   pageSize = 10,
@@ -22,19 +21,22 @@ async function getProducts(
     store: { storeId },
     ...(searchQuery ? {
       OR: [
-        { name: { contains: searchQuery } },
-        { description: { contains: searchQuery } },
+        { email: { contains: searchQuery } },
+        { firstName: { contains: searchQuery } },
+        { lastName: { contains: searchQuery } },
+        { phone: { contains: searchQuery } },
       ],
     } : {}),
   };
   
-  // Get products
-  const products = await prisma.product.findMany({
+  // Get customers
+  const customers = await prisma.storeCustomer.findMany({
     where,
     include: {
-      category: true,
-      images: {
-        take: 1,
+      orders: {
+        select: {
+          id: true,
+        },
       },
     },
     orderBy: {
@@ -45,25 +47,24 @@ async function getProducts(
   });
   
   // Get total count for pagination
-  const totalCount = await prisma.product.count({ where });
+  const totalCount = await prisma.storeCustomer.count({ where });
   
   return {
-    products,
+    customers,
     totalCount,
     totalPages: Math.ceil(totalCount / pageSize),
   };
 }
 
-export default async function ProductsPage({ params, searchParams }: ProductsPageProps) {
+export default async function CustomersPage({ params, searchParams }: CustomersPageProps) {
   'use server';
   
   // Await the params to avoid Next.js 15 warning
   const { storeId } = await params;
-  console.log(storeId + " from page products");
   const sp = await searchParams;
   
-  const page = sp?.page ? parseInt(sp?.page) : 1;
-  const { products, totalCount, totalPages } = await getProducts(
+  const page = sp?.page ? parseInt(sp.page) : 1;
+  const { customers, totalCount, totalPages } = await getCustomers(
     storeId,
     page,
     10,
@@ -74,25 +75,19 @@ export default async function ProductsPage({ params, searchParams }: ProductsPag
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Products</h1>
+          <h1 className="text-3xl font-bold">Customers</h1>
           <p className="text-muted-foreground">
-            Manage your store products ({totalCount} total)
+            Manage your store customers ({totalCount} total)
           </p>
         </div>
-        <Link href={`/admin/${storeId}/products/new`}>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Product
-          </Button>
-        </Link>
       </div>
       
-      <ProductsTable 
-        products={products} 
+      <CustomersTable 
+        customers={customers} 
         totalPages={totalPages} 
         currentPage={page} 
         storeId={storeId}
       />
     </div>
   );
-}
+} 

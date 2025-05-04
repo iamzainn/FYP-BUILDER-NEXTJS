@@ -1,163 +1,163 @@
 import { WebsiteConfig } from "@/types/website";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://webifybackend.vercel.app";
+const API_BASE_URL = "http://localhost:3000";
 
 /**
  * Service for making API calls to the backend
  */
 class ApiService {
-  /**
-   * Register a new user
-   */
-  static async register(userData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-  }) {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(userData),
-    });
+  // /**
+  //  * Register a new user
+  //  */
+  // static async register(userData: {
+  //   firstName: string;
+  //   lastName: string;
+  //   email: string;
+  //   password: string;
+  // }) {
+  //   const response = await fetch(`${API_BASE_URL}/auth/register`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     credentials: "include",
+  //     body: JSON.stringify(userData),
+  //   });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Registration failed");
-    }
+  //   if (!response.ok) {
+  //     const errorData = await response.json();
+  //     throw new Error(errorData.message || "Registration failed");
+  //   }
 
-    return await response.json();
-  }
+  //   return await response.json();
+  // }
 
-  /**
-   * Verify email with code
-   */
-  static async verifyEmail(data: { email: string; code: string }) {
-    const response = await fetch(`${API_BASE_URL}/auth/verify`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(data),
-    });
+  // /**
+  //  * Verify email with code
+  //  */
+  // static async verifyEmail(data: { email: string; code: string }) {
+  //   const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     credentials: "include",
+  //     body: JSON.stringify(data),
+  //   });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Verification failed");
-    }
+  //   if (!response.ok) {
+  //     const errorData = await response.json();
+  //     throw new Error(errorData.message || "Verification failed");
+  //   }
 
-    const responseData = await response.json();
+  //   const responseData = await response.json();
 
-    // Store token in localStorage if available
-    if (responseData.token) {
-      localStorage.setItem("auth_token", responseData.token);
-    }
+  //   // Store token in localStorage if available
+  //   if (responseData.token) {
+  //     localStorage.setItem("auth_token", responseData.token);
+  //   }
 
-    return responseData;
-  }
+  //   return responseData;
+  // }
 
-  /**
-   * Resend verification code
-   */
-  static async resendVerificationCode(email: string) {
-    const response = await fetch(`${API_BASE_URL}/auth/resend-code`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ email }),
-    });
+  // /**
+  //  * Resend verification code
+  //  */
+  // static async resendVerificationCode(email: string) {
+  //   const response = await fetch(`${API_BASE_URL}/auth/resend-code`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     credentials: "include",
+  //     body: JSON.stringify({ email }),
+  //   });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.message || "Failed to resend verification code"
-      );
-    }
+  //   if (!response.ok) {
+  //     const errorData = await response.json();
+  //     throw new Error(
+  //       errorData.message || "Failed to resend verification code"
+  //     );
+  //   }
 
-    return await response.json();
-  }
+  //   return await response.json();
+  // }
 
-  /**
-   * Login user
-   */
-  static async login(credentials: { email: string; password: string }) {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(credentials),
-    });
+  // /**
+  //  * Login user
+  //  */
+  // static async login(credentials: { email: string; password: string }) {
+  //   const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     credentials: "include",
+  //     body: JSON.stringify(credentials),
+  //   });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Login failed");
-    }
+  //   if (!response.ok) {
+  //     const errorData = await response.json();
+  //     throw new Error(errorData.message || "Login failed");
+  //   }
 
-    const data = await response.json();
+  //   const data = await response.json();
 
-    // Store token in localStorage if it exists in the response
-    if (data.token) {
-      localStorage.setItem("auth_token", data.token);
-    }
+  //   // Store token in localStorage if it exists in the response
+  //   if (data.token) {
+  //     localStorage.setItem("auth_token", data.token);
+  //   }
 
-    return data;
-  }
+  //   return data;
+  // }
 
-  /**
-   * Logout user
-   */
-  static async logout() {
-    // Clear token from localStorage
-    localStorage.removeItem("auth_token");
+  // /**
+  //  * Logout user
+  //  */
+  // static async logout() {
+  //   // Clear token from localStorage
+  //   localStorage.removeItem("auth_token");
 
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+  //   const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+  //     method: "POST",
+  //     credentials: "include",
+  //   });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Logout failed");
-    }
+  //   if (!response.ok) {
+  //     const errorData = await response.json();
+  //     throw new Error(errorData.message || "Logout failed");
+  //   }
 
-    return await response.json();
-  }
+  //   return await response.json();
+  // }
 
-  /**
-   * Get user profile
-   */
-  static async getUserProfile() {
-    const token = localStorage.getItem("auth_token");
+  // /**
+  //  * Get user profile
+  //  */
+  // static async getUserProfile() {
+  //   const token = localStorage.getItem("auth_token");
 
-    const response = await fetch(`${API_BASE_URL}/user/profile`, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-      credentials: "include", // Keep for backward compatibility
-    });
+  //   const response = await fetch(`${API_BASE_URL}/user/profile`, {
+  //     headers: {
+  //       Authorization: token ? `Bearer ${token}` : "",
+  //     },
+  //     credentials: "include", // Keep for backward compatibility
+  //   });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to fetch user profile");
-    }
+  //   if (!response.ok) {
+  //     const errorData = await response.json();
+  //     throw new Error(errorData.message || "Failed to fetch user profile");
+  //   }
 
-    return await response.json();
-  }
+  //   return await response.json();
+  // }
 
   /**
    * Get user's websites
    */
   static async getUserWebsites() {
     const token = localStorage.getItem("auth_token");
+
 
     const response = await fetch(`${API_BASE_URL}/user/websites`, {
       headers: {
@@ -179,10 +179,11 @@ class ApiService {
    */
   static async createWebsite(data: {
     storeName: string;
+    subdomain: string;
     storeConfig?: Record<string, unknown>;
   }) {
-    // No need for token with Clerk as it handles authentication via cookies
-    const response = await fetch(`/api/websites`, {
+    console.log("data created in apiService ",data);
+    const response = await fetch(`${API_BASE_URL}/api/websites`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { AIService } from '../../services/aiService';
-import { ApiService } from '@/services/apiService';
+
 import { MongoDBApiService } from '@/services/mondodbapi';
 import Link from 'next/link';
 
@@ -13,6 +13,7 @@ export default function SetupPage() {
   const [formData, setFormData] = useState({
     storeName: '',
     storeDescription: '',
+    subdomain: '',
     primaryColor: '#2563eb',
     secondaryColor: '#1e40af',
     logo: '',
@@ -87,13 +88,32 @@ export default function SetupPage() {
     }
   };
 
+   // Add this function to your page.tsx file
+   function generateSubdomain(storeName: string): string {
+    // Convert to lowercase
+    let subdomain = storeName.toLowerCase();
+    
+    // Remove special characters and spaces
+    subdomain = subdomain.replace(/[^a-z0-9]/g, '');
+    
+    // Ensure it's not empty (fallback to a default if needed)
+    if (!subdomain) {
+      subdomain = 'store' + Math.floor(Math.random() * 10000);
+    }
+    
+    return subdomain;
+  }
+
   const handleSubmit = async () => {
     setIsGenerating(true);
+    const subdomain = generateSubdomain(formData.storeName);
+    console.log("subdomain created ",subdomain);
     
     try {
       // Generate hero content using AI
       const aiService = new AIService('AIzaSyCiYjw2tHMyFGVysLOTBztOl2Z9H4l8L3E');
       const heroContent = await aiService.generateHeroContent(formData.storeName, formData.storeDescription);
+      console.log("heroContent created ",heroContent);
 
       // Save navbar settings
       const navItems = [
@@ -787,150 +807,6 @@ export default function SetupPage() {
             textTransform: "none",
             fontFamily: "",
           }
-        },
-        {
-          id: 'prod1',
-          name: "Premium Wireless Headphones",
-          description: "Experience crystal-clear sound with our premium noise-cancelling headphones. Perfect for music lovers and professionals alike.",
-          price: 249.99,
-          imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=2070&auto=format&fit=crop",
-          rating: 4.8,
-          badge: "BEST SELLER",
-          buttonText: "Add to Cart",
-          styles: {
-            nameColor: "#000000",
-            descriptionColor: "#666666",
-            priceColor: "#000000",
-            fontSize: "18px",
-            fontWeight: "600",
-            imageHeight: "300px",
-            cardBackgroundColor: "#ffffff",
-            buttonColor: "#3B82F6",
-            buttonTextColor: "#ffffff",
-            borderRadius: "8px",
-            badgeColor: "#ef4444",
-            badgeTextColor: "#ffffff",
-            ratingColor: "#FFD700",
-            borderWidth: "0px",
-            borderColor: "transparent",
-            objectFit: "cover",
-            showDescription: true,
-            showButton: true,
-            showRating: true,
-            showBadge: true,
-            hoverEffect: "zoom",
-            animation: "fade",
-            textTransform: "none",
-            fontFamily: "",
-          }
-        },
-        {
-          id: 'prod2',
-          name: "Smart Watch Series 5",
-          description: "Track your fitness goals, receive notifications, and more with this sleek smartwatch. Water-resistant and long battery life.",
-          price: 199.99,
-          imageUrl: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=2064&auto=format&fit=crop",
-          rating: 4.5,
-          badge: "NEW",
-          buttonText: "Add to Cart",
-          styles: {
-            nameColor: "#000000",
-            descriptionColor: "#666666",
-            priceColor: "#000000",
-            fontSize: "18px",
-            fontWeight: "600",
-            imageHeight: "300px",
-            cardBackgroundColor: "#ffffff",
-            buttonColor: "#3B82F6",
-            buttonTextColor: "#ffffff",
-            borderRadius: "8px",
-            badgeColor: "#10b981",
-            badgeTextColor: "#ffffff",
-            ratingColor: "#FFD700",
-            borderWidth: "0px",
-            borderColor: "transparent",
-            objectFit: "cover",
-            showDescription: true,
-            showButton: true,
-            showRating: true,
-            showBadge: true,
-            hoverEffect: "zoom",
-            animation: "fade",
-            textTransform: "none",
-            fontFamily: "",
-          }
-        },
-        {
-          id: 'prod3',
-          name: "Designer Leather Backpack",
-          description: "Stylish and practical leather backpack with multiple compartments. Perfect for work, travel, or everyday use.",
-          price: 129.99,
-          imageUrl: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=2069&auto=format&fit=crop",
-          rating: 4.2,
-          badge: "SALE",
-          buttonText: "Add to Cart",
-          styles: {
-            nameColor: "#000000",
-            descriptionColor: "#666666",
-            priceColor: "#000000",
-            fontSize: "18px",
-            fontWeight: "600",
-            imageHeight: "300px",
-            cardBackgroundColor: "#ffffff",
-            buttonColor: "#3B82F6",
-            buttonTextColor: "#ffffff",
-            borderRadius: "8px",
-            badgeColor: "#8b5cf6",
-            badgeTextColor: "#ffffff",
-            ratingColor: "#FFD700",
-            borderWidth: "0px",
-            borderColor: "transparent",
-            objectFit: "cover",
-            showDescription: true,
-            showButton: true,
-            showRating: true,
-            showBadge: true,
-            hoverEffect: "zoom",
-            animation: "fade",
-            textTransform: "none",
-            fontFamily: "",
-          }
-        },
-        {
-          id: 'prod4',
-          name: "Ergonomic Office Chair",
-          description: "Work comfortably with this ergonomic office chair. Adjustable height, lumbar support, and premium materials for all-day comfort.",
-          price: 349.99,
-          imageUrl: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=2000&auto=format&fit=crop",
-          rating: 4.7,
-          badge: "PREMIUM",
-          buttonText: "Add to Cart",
-          styles: {
-            nameColor: "#000000",
-            descriptionColor: "#666666",
-            priceColor: "#000000",
-            fontSize: "18px",
-            fontWeight: "600",
-            imageHeight: "300px",
-            cardBackgroundColor: "#ffffff",
-            buttonColor: "#3B82F6",
-            buttonTextColor: "#ffffff",
-            borderRadius: "8px",
-            badgeColor: "#f59e0b",
-            badgeTextColor: "#ffffff",
-            ratingColor: "#FFD700",
-            borderWidth: "0px",
-            borderColor: "transparent",
-            objectFit: "cover",
-            showDescription: true,
-            showButton: true,
-            showRating: true,
-            showBadge: true,
-            hoverEffect: "zoom",
-            animation: "fade",
-            textTransform: "none",
-            fontFamily: "",
-          }
         }
       ];
 
@@ -1089,30 +965,38 @@ const defaultStyles = {
         setupComplete: true
       };
 
-      // Create the website in MongoDB
-      const createdWebsite = await ApiService.createWebsite({
-        storeName: formData.storeName,
-        storeConfig: websiteConfig
-      });
+     
 
-      if (!createdWebsite) {
+      ;
+
+      const data = {
+        storeName: formData.storeName,
+        subdomain: subdomain,
+        storeConfig: websiteConfig
+      }
+      console.log("data created in create-web ",data);
+
+      // Create the website in MongoDB
+      const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://ai-website-builder-ashen.vercel.app/'}/api/websites`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create website");
+      }
+
+      if (!response) {
         throw new Error('Failed to create website in database');
       }
 
-      console.log('Website created in database:', createdWebsite);
+      console.log('Website created in database:', response);
 
-      // Save the complete website configuration to MongoDB
-      const savedConfig = await MongoDBApiService.saveWebsiteConfig({
-        ...websiteConfig,
-        // @ts-expect-error - storeId is required by the API but not part of WebsiteConfig type
-        storeId: createdWebsite.storeId
-      });
       
-      if (!savedConfig) {
-        throw new Error('Failed to save website configuration');
-      }
-
-      // Redirect to home page
       router.push(`/home/${formData.storeName}`);
     } catch (error) {
       console.error('Error during setup:', error);

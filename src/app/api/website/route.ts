@@ -28,10 +28,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     
-    // In a real application, you would get the userId from the authenticated user
-    // For now, we'll use userId "1" as specified in the requirements
+    
     const userId = "1";
-    console.log("body",body);
+    console.log("body",);
     // Create or update website config
     const websiteConfig: WebsiteConfig = {
       userId,
