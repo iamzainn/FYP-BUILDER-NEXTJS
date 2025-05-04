@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, LayoutGrid, Users, PackageOpen, Tag, ChevronLeft, Menu } from "lucide-react";
+import { ShoppingBag, LayoutGrid, Users, PackageOpen, Tag, ChevronLeft, Menu, Settings, Ticket, Bell, CreditCard } from "lucide-react";
 
 interface AdminSidebarProps {
   storeId: string;
@@ -39,6 +39,26 @@ export default function AdminSidebar({ storeId, storeName }: AdminSidebarProps) 
       label: "Customers",
       href: `/admin/${storeId}/customers`,
       icon: Users,
+    },
+    {
+      label: "Discounts",
+      href: `/admin/${storeId}/discounts`,
+      icon: Ticket,
+    },
+    {
+      label: "Notifications",
+      href: `/admin/${storeId}/notifications`,
+      icon: Bell,
+    },
+    {
+      label: "Payment Gateway",
+      href: `/admin/${storeId}/payments`,
+      icon: CreditCard,
+    },
+    {
+      label: "Store Settings",
+      href: `/admin/${storeId}/settings`,
+      icon: Settings,
     },
   ];
 

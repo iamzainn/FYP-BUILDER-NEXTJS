@@ -6,6 +6,7 @@ import { AIService } from '../../services/aiService';
 
 import { MongoDBApiService } from '@/services/mondodbapi';
 import Link from 'next/link';
+import { generateSubdomain } from '@/lib/fn';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -89,20 +90,7 @@ export default function SetupPage() {
   };
 
    // Add this function to your page.tsx file
-   function generateSubdomain(storeName: string): string {
-    // Convert to lowercase
-    let subdomain = storeName.toLowerCase();
-    
-    // Remove special characters and spaces
-    subdomain = subdomain.replace(/[^a-z0-9]/g, '');
-    
-    // Ensure it's not empty (fallback to a default if needed)
-    if (!subdomain) {
-      subdomain = 'store' + Math.floor(Math.random() * 10000);
-    }
-    
-    return subdomain;
-  }
+   
 
   const handleSubmit = async () => {
     setIsGenerating(true);

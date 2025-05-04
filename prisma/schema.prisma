@@ -195,3 +195,48 @@ enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
 }
+
+
+
+//future features:
+
+// model Page {
+//   id           Int       @id @default(autoincrement())
+//   storeId      Int       @map("store_id")
+//   title        String    @db.VarChar(255) 
+//   slug         String    @db.VarChar(255)
+//   isPublished  Boolean   @default(false) @map("is_published")
+//   pageType     PageType  @default(CUSTOM) @map("page_type")
+//   pageOrder    Int       @default(0) @map("page_order") 
+//   createdAt    DateTime? @default(now()) @map("created_at") @db.DateTime(0)
+//   updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+//   store        UserStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
+//   components   PageComponent[]
+
+//   @@unique([storeId, slug])
+//   @@index([storeId], map: "idx_page_store_id")
+//   @@map("pages")
+// }
+
+// model PageComponent {
+//   id           Int       @id @default(autoincrement())
+//   pageId       Int       @map("page_id") 
+//   componentType String   @map("component_type") @db.VarChar(50)
+//   content      Json      
+//   order        Int       @default(0)
+//   createdAt    DateTime? @default(now()) @map("created_at") @db.DateTime(0)
+//   updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+//   page         Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+//   @@index([pageId], map: "idx_page_component_page_id")
+//   @@map("page_components")
+// }
+
+// enum PageType {
+//   HOME
+//   PRODUCTS
+//   ABOUT
+//   CONTACT
+//   CHECKOUT
+//   CUSTOM
+// }
