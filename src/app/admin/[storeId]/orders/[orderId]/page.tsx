@@ -40,7 +40,7 @@ async function getOrderWithDetails(storeId: string, orderId: string) {
           },
         },
       },
-      coupon: true,
+      discount: true,
     },
   });
   
@@ -208,9 +208,9 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
                       Discount
-                      {order.coupon && (
-                        <span className="ml-1 text-sm">
-                          (Code: {order.coupon.code})
+                        {order.discount && (
+                          <span className="ml-1 text-sm">
+                          (Code: {order.discount.couponCode})
                         </span>
                       )}
                     </span>
