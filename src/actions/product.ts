@@ -7,6 +7,9 @@ import { revalidatePath } from "next/cache";
 
 import { deleteUploadthingImage } from "./uploadthing";
 
+// Notification server URL
+const NOTIFICATION_SERVER_URL = process.env.NOTIFICATION_SERVER_URL || "http://localhost:3001";
+
 export async function createProduct(formData: FormData) {
   const { userId: clerkId } = await auth();
   const storeId = formData.get("storeId") as string;
@@ -79,6 +82,32 @@ export async function createProduct(formData: FormData) {
     }
     
     revalidatePath(`/admin/${storeId}/products`);
+    
+    // Send notification to backend server
+    try {
+      await fetch(`${NOTIFICATION_SERVER_URL}/api/products/created`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          storeId: storeId,
+          productData: {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            stockLevel: product.stockLevel,
+            
+            imageUrl: validatedData.images?.[0]?.url || null,
+            isActive: product.isActive
+          }
+        })
+      });
+      console.log("Product creation notification sent successfully");
+    } catch (notificationError) {
+      // Log but don't fail if notification fails
+      console.error("Failed to send product creation notification:", notificationError);
+    }
     
     // Return success instead of redirecting
     return {
@@ -283,6 +312,40 @@ export async function updateProduct(formData: FormData) {
     
     revalidatePath(`/admin/${storeId}/products`);
     
+    // Send notification to backend server
+    try {
+      await fetch(`${NOTIFICATION_SERVER_URL}/api/products/updated`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          storeId: storeId,
+          productData: {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            stockLevel: product.stockLevel,
+           
+            imageUrl: images[0]?.url || null,
+            isActive: product.isActive
+          },
+          changes: {
+            nameChanged: existingProduct.name !== validatedData.name,
+            priceChanged: existingProduct.price !== validatedData.price,
+            stockChanged: existingProduct.stockLevel !== validatedData.stockLevel,
+            statusChanged: existingProduct.isActive !== validatedData.isActive,
+            categoryChanged: existingProduct.categoryId !== validatedData.categoryId,
+            imagesChanged: images.length !== existingProduct.images.length
+          }
+        })
+      });
+      console.log("Product update notification sent successfully");
+    } catch (notificationError) {
+      // Log but don't fail if notification fails
+      console.error("Failed to send product update notification:", notificationError);
+    }
+    
     // Return success instead of redirecting
     return {
       success: true,
@@ -354,6 +417,29 @@ export async function deleteProduct(storeId: string, productId: number) {
     }
     
     revalidatePath(`/admin/${storeId}/products`);
+    
+    // Send notification to backend server
+    try {
+      await fetch(`${NOTIFICATION_SERVER_URL}/api/products/deleted`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          storeId: storeId,
+          productData: {
+            id: existingProduct.id,
+            name: existingProduct.name,
+            price: existingProduct.price,
+            imageUrl: existingProduct.images[0]?.url || null
+          }
+        })
+      });
+      console.log("Product deletion notification sent successfully");
+    } catch (notificationError) {
+      // Log but don't fail if notification fails
+      console.error("Failed to send product deletion notification:", notificationError);
+    }
     
     return {
       success: true,

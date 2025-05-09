@@ -1,8 +1,12 @@
+// app/admin/[storeId]/layout.tsx
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import { SocketProvider } from "@/contexts/SocketContext";
+import { NotificationListener } from "@/components/admin/NotificationListener";
+
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -37,13 +41,18 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <AdminSidebar storeId={storeId} storeName={store.storeName} />
-      <div className="flex-1 overflow-y-auto">
-        <main className="p-6 md:px-8 h-full">
-          {children}
-        </main>
+    <SocketProvider storeId={storeId}>
+      <div className="flex h-screen overflow-hidden bg-background">
+        <AdminSidebar storeId={storeId} storeName={store.storeName} />
+        <div className="flex-1 overflow-y-auto relative">
+          <div className="absolute top-4 right-4 z-50">
+            <NotificationListener storeId={storeId} />
+          </div>
+          <main className="p-6 md:px-8 h-full">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SocketProvider>
   );
 }
