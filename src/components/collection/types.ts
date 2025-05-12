@@ -100,6 +100,7 @@ export interface SidebarCollectionProps {
   handleAIConfigUpdate: (newConfig: WebsiteConfig) => void;
   onItemsChange?: (items: CollectionItem[]) => void;
   onStylesChange?: (styles: CollectionStyles) => void;
+  onCloseSidebar?: () => void;
 }
 
 export const defaultCollectionItems: CollectionItem[] = [

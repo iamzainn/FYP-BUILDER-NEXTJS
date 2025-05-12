@@ -12,7 +12,8 @@ const SidebarCollection: React.FC<SidebarCollectionProps> = ({
   apiKey,
   handleAIConfigUpdate,
   onItemsChange,
-  onStylesChange
+  onStylesChange,
+  onCloseSidebar
 }) => {
   if (!isEditing) return null;
 
@@ -96,12 +97,26 @@ const SidebarCollection: React.FC<SidebarCollectionProps> = ({
       <div className="sticky top-0 bg-gray-900 pb-4 z-10">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Edit Collection</h2>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          >
-            Save
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >
+              Save
+            </button>
+            {onCloseSidebar && (
+              <button
+                onClick={onCloseSidebar}
+                className="p-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors focus:outline-none"
+                title="Close editor"
+                aria-label="Close editor"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Global Settings */}

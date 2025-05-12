@@ -75,10 +75,10 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ metadata, file }) => {
       try {
         // Return the file URL to the client
-        return { uploadedBy: metadata.userId, url: file.url };
+        return { uploadedBy: metadata.userId, url: file.ufsUrl };
       } catch (error) {
         console.error("Error in imageUploader onUploadComplete:", error);
-        return { uploadedBy: metadata.userId, url: file.url, error: "Error processing upload" };
+        return { uploadedBy: metadata.userId, url: file.ufsUrl, error: "Error processing upload" };
       }
     }),
 } satisfies FileRouter;

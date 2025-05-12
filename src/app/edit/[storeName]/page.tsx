@@ -1078,6 +1078,7 @@ export default function Editor() {
               isAdmin={true}
               isEditing={editingComponent === 'collection'}
               onStartEdit={() => setEditingComponent('collection')}
+              onCloseSidebar={closeSidebar}
               onSave={() => {
                 // Update the central state with the latest individual component state
                 handleComponentUpdate('collection', {
@@ -1119,6 +1120,7 @@ export default function Editor() {
               isAdmin={true}
               isEditing={editingComponent === 'collection'}
               onStartEdit={() => setEditingComponent('collection')}
+              onCloseSidebar={closeSidebar}
               onSave={handleSave}
               apiKey={OPENAI_API_KEY}
               savedItems={collectionItems as any}
@@ -1148,6 +1150,7 @@ export default function Editor() {
               isAdmin={true}
               isEditing={editingComponent === 'products'}
               onStartEdit={() => setEditingComponent('products')}
+              onCloseSidebar={closeSidebar}
               onSave={() => {
                 // Update the central state with the latest individual component state
                 handleComponentUpdate('product', {
@@ -1189,6 +1192,7 @@ export default function Editor() {
               isAdmin={true}
               isEditing={editingComponent === 'products'}
               onStartEdit={() => setEditingComponent('products')}
+              onCloseSidebar={closeSidebar}
               onSave={handleSave}
               apiKey={OPENAI_API_KEY}
               savedItems={productItems as any}
