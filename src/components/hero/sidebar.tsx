@@ -1,120 +1,188 @@
 import AIChat from '../AIChat';
 import Image from 'next/image';
-
-interface HeroItem {
-  id: string;
-  type: 'heading' | 'subheading' | 'button' | 'image' | 'badge' | 'paragraph';
-  content: string;
-  link?: string;
-  position: 'left' | 'center' | 'right';
-  styles: {
-    color: string;
-    fontSize: string;
-    fontFamily: string;
-    fontWeight: string;
-    backgroundColor: string;
-    padding: string;
-    margin: string;
-    width?: string;
-    height?: string;
-    borderRadius?: string;
-    borderWidth?: string;
-    borderColor?: string;
-    borderStyle?: string;
-    objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
-    textAlign?: 'left' | 'center' | 'right';
-    textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
-    letterSpacing?: string;
-    lineHeight?: string;
-    boxShadow?: string;
-    opacity?: string;
-    zIndex?: string;
-    position?: 'relative' | 'absolute';
-    top?: string;
-    left?: string;
-    transform?: string;
-    marginTop?: string;
-    marginRight?: string;
-    marginBottom?: string;
-    marginLeft?: string;
-    maxWidth?: string;
-    maxHeight?: string;
-    aspectRatio?: string;
-  };
-  imageUrl?: string;
-  animation?: 'none' | 'fade' | 'slide' | 'bounce';
-}
-
-interface HeroStyles {
-  backgroundColor: string;
-  backgroundImage: string;
-  backgroundSize: 'cover' | 'contain' | 'auto' | 'custom';
-  backgroundWidth: string;
-  backgroundPosition: string;
-  backgroundRepeat: 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y';
-  backgroundOverlay: string;
-  overlayOpacity: string;
-  height: string;
-  padding: string;
-  fontFamily: string;
-  color: string;
-  layout: 'left-content' | 'right-content' | 'center-content' | 'full-width';
-}
+import { useState, useRef } from 'react';
+import { HeroItem, HeroStyles, WebsiteConfig, fontFamilies } from './types';
+import { UploadButton } from '@/utils/uploadthing';
 
 interface HeroSidebarProps {
   isEditing: boolean;
-  selectedItem: string | null;
   heroItems: HeroItem[];
+  selectedItem: string | null;
   heroStyles: HeroStyles;
-  fontFamilies: string[];
-  fileInputRef: React.RefObject<HTMLInputElement>;
-  handleSave: () => void;
-  addNewItem: (type: 'heading' | 'subheading' | 'button' | 'image' | 'badge' | 'paragraph', position?: 'left' | 'center' | 'right') => void;
-  updateItemText: (itemId: string, field: 'content' | 'link', value: string) => void;
-  updateItemPosition: (itemId: string, position: 'left' | 'center' | 'right') => void;
-  updateItemStyle: (itemId: string, styleKey: string, value: string) => void;
-  deleteItem: (itemId: string) => void;
+  setSelectedItem: React.Dispatch<React.SetStateAction<string | null>>;
+  onAddItem: (type: string) => void;
+  onDeleteItem: (id: string) => void;
+  onUpdateItemContent: (id: string, content: string) => void;
+  onUpdateItemLink: (id: string, link: string) => void;
+  onUpdateItemStyle: (id: string, style: Partial<HeroItem['styles']>) => void;
+  onUpdateItemPosition: (id: string, position: { x: number; y: number }) => void;
+  onUpdateItemAnimation: (id: string, animation: string) => void;
+  onUpdateHeroStyle: (style: Partial<HeroStyles>) => void;
+  onSave: () => void;
+  handleClose: () => void;
+  setHeroItems: React.Dispatch<React.SetStateAction<HeroItem[]>>;
   setHeroStyles: React.Dispatch<React.SetStateAction<HeroStyles>>;
   apiKey?: string;
-  handleAIConfigUpdate: (newConfig: { navbarConfig: null; heroConfig: { items: HeroItem[]; styles: HeroStyles } }) => void;
+  onAIConfigUpdate?: (newConfig: WebsiteConfig) => void;
+  useDirectSave?: boolean;
+  componentId?: number;
+  isSaving?: boolean;
 }
 
-const HeroSidebar: React.FC<HeroSidebarProps> = ({ 
-  isEditing, 
-  selectedItem, 
-  heroItems, 
-  heroStyles, 
-  fontFamilies,
-  fileInputRef,
-  handleSave, 
-  addNewItem,
-  updateItemText,
-  updateItemPosition,
-  updateItemStyle,
-  deleteItem,
+export const HeroSidebar: React.FC<HeroSidebarProps> = ({
+  isEditing,
+  heroItems,
+  selectedItem,
+  heroStyles,
+  setSelectedItem,
+  onAddItem,
+  onDeleteItem,
+  onUpdateItemContent,
+  onUpdateItemLink,
+  onUpdateItemStyle,
+  onUpdateItemPosition,
+  onUpdateItemAnimation,
+  onUpdateHeroStyle,
+  onSave,
+  handleClose,
+  setHeroItems,
   setHeroStyles,
   apiKey,
-  handleAIConfigUpdate
+  onAIConfigUpdate,
+  useDirectSave,
+  componentId,
+  isSaving = false
 }) => {
   if (!isEditing) return null;
   
+  // Local state for file upload
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Update the handleAddItem function
+  const handleAddItem = (type: string) => {
+    onAddItem(type);
+  };
+
+  // Update the handleDeleteItem function
+  const handleDeleteItem = (id: string) => {
+    onDeleteItem(id);
+    // If this was the selected item, clear the selection
+    if (selectedItem === id) {
+      setSelectedItem(null);
+    }
+  };
+
+  // Update the handleUpdateItemContent function
+  const handleUpdateItemContent = (id: string, content: string) => {
+    console.log(`Updating content for item ${id} to "${content}"`);
+    onUpdateItemContent(id, content);
+  };
+
+  // Update the handleUpdateItemLink function
+  const handleUpdateItemLink = (id: string, link: string) => {
+    console.log(`Updating link for item ${id} to "${link}"`);
+    onUpdateItemLink(id, link);
+  };
+
+  // Update the handleUpdateItemPosition function
+  const handleUpdateItemPosition = (id: string, position: 'left' | 'center' | 'right') => {
+    console.log(`Updating position for item ${id} to "${position}"`);
+    onUpdateItemPosition(id, { 
+      x: position === 'left' ? 0 : position === 'center' ? 0.5 : 1, 
+      y: 0 
+    });
+  };
+
+  // Update the handleUpdateItemStyle function
+  const handleUpdateItemStyle = (id: string, styleKey: string, value: string) => {
+    onUpdateItemStyle(id, { [styleKey]: value });
+  };
+
+  // Update the handleUpdateItemAnimation function
+  const handleUpdateItemAnimation = (id: string, animation: string) => {
+    console.log(`Updating animation for item ${id} to "${animation}"`);
+    onUpdateItemAnimation(id, animation);
+  };
+
+  // Update the handleUpdateHeroStyle function
+  const handleUpdateHeroStyle = (styleKey: string, value: string) => {
+    onUpdateHeroStyle({ [styleKey]: value });
+  };
+
+  // Handler for uploading an item image (now using UploadThing)
+  const handleItemImageUpload = async (id: string, url: string) => {
+    // Update item with the new image URL
+    onUpdateItemStyle(id, { imageUrl: url });
+  };
+
+  // Handler for uploading a hero background image (now using UploadThing)
+  const handleHeroBackgroundImageUpload = async (url: string) => {
+    // Update hero style with the new background image
+    onUpdateHeroStyle({ backgroundImage: url });
+  };
+
   return (
     <div className="fixed right-0 top-0 h-full w-80 md:w-96 bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-2xl p-4 md:p-6 overflow-y-auto z-[9999] transform transition-all duration-300 ease-in-out">
       <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
           Customize Hero
         </h2>
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
-          aria-label="Save changes"
-          title="Save changes"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-          Save
-        </button>
+        <div className="flex gap-2">
+          {/* Add close button */}
+          <button
+            onClick={() => {
+              console.log("Hero sidebar close button clicked");
+              handleClose();
+            }}
+            className="p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            aria-label="Close sidebar"
+            title="Close sidebar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          {/* Update save button to show loading state */}
+          <button
+            onClick={() => {
+              console.log("Save button clicked");
+              console.log("Direct save mode:", useDirectSave ? "enabled" : "disabled");
+              console.log("Component ID:", componentId);
+              
+              try {
+                onSave();
+                console.log("Save action completed successfully");
+              } catch (error) {
+                console.error("Error during save operation:", error);
+              }
+            }}
+            disabled={isSaving}
+            className={`px-4 py-2 rounded-lg text-white transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${
+              isSaving
+                ? 'bg-gray-600 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+            }`}
+            aria-label={isSaving ? "Saving changes..." : "Save changes"}
+            title={isSaving ? "Saving changes..." : "Save changes"}
+          >
+            {isSaving ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Save
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Add New Item Buttons */}
@@ -122,42 +190,42 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
         <h3 className="text-lg font-semibold mb-4 text-blue-300">Add New Element</h3>
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => addNewItem('heading')}
+            onClick={() => handleAddItem('heading')}
             className="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-sm hover:shadow-md transition-all"
             title="Add heading"
           >
             Add Heading
           </button>
           <button
-            onClick={() => addNewItem('subheading')}
+            onClick={() => handleAddItem('subheading')}
             className="px-3 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg hover:from-indigo-600 hover:to-indigo-700 shadow-sm hover:shadow-md transition-all"
             title="Add subheading"
           >
             Add Subheading
           </button>
           <button
-            onClick={() => addNewItem('paragraph')}
+            onClick={() => handleAddItem('paragraph')}
             className="px-3 py-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 shadow-sm hover:shadow-md transition-all"
             title="Add paragraph"
           >
             Add Paragraph
           </button>
           <button
-            onClick={() => addNewItem('button')}
+            onClick={() => handleAddItem('button')}
             className="px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg hover:from-green-600 hover:to-green-700 shadow-sm hover:shadow-md transition-all"
             title="Add button"
           >
             Add Button
           </button>
           <button
-            onClick={() => addNewItem('badge')}
+            onClick={() => handleAddItem('badge')}
             className="px-3 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg hover:from-yellow-600 hover:to-yellow-700 shadow-sm hover:shadow-md transition-all text-gray-900"
             title="Add badge"
           >
             Add Badge
           </button>
           <button
-            onClick={() => addNewItem('image')}
+            onClick={() => handleAddItem('image')}
             className="px-3 py-2 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg hover:from-pink-600 hover:to-pink-700 shadow-sm hover:shadow-md transition-all"
             title="Add image"
           >
@@ -177,7 +245,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
               Edit Element
             </h3>
             <button
-              onClick={() => deleteItem(selectedItem)}
+              onClick={() => handleDeleteItem(selectedItem)}
               className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
               title="Delete item"
               aria-label="Delete item"
@@ -197,7 +265,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
             <input
               type="text"
               value={heroItems.find(item => item.id === selectedItem)?.content || ''}
-              onChange={(e) => updateItemText(selectedItem, 'content', e.target.value)}
+              onChange={(e) => handleUpdateItemContent(selectedItem, e.target.value)}
               className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter content"
               aria-label="Item content"
@@ -214,7 +282,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
               <input
                 type="text"
                 value={heroItems.find(item => item.id === selectedItem)?.link || ''}
-                onChange={(e) => updateItemText(selectedItem, 'link', e.target.value)}
+                onChange={(e) => handleUpdateItemLink(selectedItem, e.target.value)}
                 className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g., /shop, /products"
                 aria-label="Button link"
@@ -230,7 +298,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
             </label>
             <select
               value={heroItems.find(item => item.id === selectedItem)?.position}
-              onChange={(e) => updateItemPosition(selectedItem, e.target.value as 'left' | 'center' | 'right')}
+              onChange={(e) => handleUpdateItemPosition(selectedItem, e.target.value as 'left' | 'center' | 'right')}
               className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               aria-label="Item position"
               title="Select item position"
@@ -248,13 +316,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
             </label>
             <select
               value={heroItems.find(item => item.id === selectedItem)?.animation || 'none'}
-              onChange={(e) => {
-                const item = heroItems.find(item => item.id === selectedItem);
-                if (item) {
-                  // Update state directly
-                  updateItemStyle(selectedItem, 'animation', e.target.value);
-                }
-              }}
+              onChange={(e) => handleUpdateItemAnimation(selectedItem, e.target.value)}
               className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               aria-label="Animation type"
               title="Select animation type"
@@ -272,17 +334,20 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                 <label className="block text-sm font-medium mb-2 text-gray-300">
                   Upload Image
                 </label>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                className="w-full px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 flex items-center justify-center gap-2"
-                title="Choose an image"
-                aria-label="Upload image"
-                >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Choose Image
-                </button>
+                <UploadButton
+                  endpoint="imageUploader"
+                  onClientUploadComplete={(res) => {
+                    if (res && res[0]?.url) {
+                      handleItemImageUpload(selectedItem, res[0].url);
+                    }
+                  }}
+                  onUploadError={(error) => {
+                    console.error('UploadThing error:', error);
+                  }}
+                  appearance={{
+                    button: 'w-full px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 flex items-center justify-center gap-2',
+                  }}
+                />
               </div>
           )}
 
@@ -300,7 +365,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                   <input
                     type="color"
                     value={heroItems.find(item => item.id === selectedItem)?.styles.color || heroStyles.color}
-                    onChange={(e) => updateItemStyle(selectedItem, 'color', e.target.value)}
+                    onChange={(e) => handleUpdateItemStyle(selectedItem, 'color', e.target.value)}
                     className="h-10 w-10 rounded border border-gray-600 mr-2"
                     aria-label="Text color"
                     title="Select text color"
@@ -319,7 +384,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                     <input
                     type="color"
                     value={heroItems.find(item => item.id === selectedItem)?.styles.backgroundColor || 'transparent'}
-                    onChange={(e) => updateItemStyle(selectedItem, 'backgroundColor', e.target.value)}
+                    onChange={(e) => handleUpdateItemStyle(selectedItem, 'backgroundColor', e.target.value)}
                     className="h-10 w-10 rounded border border-gray-600 mr-2"
                     aria-label="Background color"
                     title="Select background color"
@@ -349,7 +414,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                         min="8"
                         max="96"
                         value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.fontSize || '16')}
-                        onChange={(e) => updateItemStyle(selectedItem, 'fontSize', `${e.target.value}px`)}
+                        onChange={(e) => handleUpdateItemStyle(selectedItem, 'fontSize', `${e.target.value}px`)}
                         className="w-full accent-blue-500"
                         aria-label="Font size"
                         title="Adjust font size"
@@ -367,7 +432,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                   </label>
                   <select
                       value={heroItems.find(item => item.id === selectedItem)?.styles.fontFamily || heroStyles.fontFamily}
-                      onChange={(e) => updateItemStyle(selectedItem, 'fontFamily', e.target.value)}
+                      onChange={(e) => handleUpdateItemStyle(selectedItem, 'fontFamily', e.target.value)}
                       className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       aria-label="Font family"
                       title="Select font family"
@@ -388,7 +453,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                     </label>
                     <select
                       value={heroItems.find(item => item.id === selectedItem)?.styles.fontWeight || '400'}
-                      onChange={(e) => updateItemStyle(selectedItem, 'fontWeight', e.target.value)}
+                      onChange={(e) => handleUpdateItemStyle(selectedItem, 'fontWeight', e.target.value)}
                       className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       aria-label="Font weight"
                       title="Select font weight"
@@ -410,7 +475,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                       </label>
                       <select
                         value={heroItems.find(item => item.id === selectedItem)?.styles.textAlign || 'left'}
-                        onChange={(e) => updateItemStyle(selectedItem, 'textAlign', e.target.value)}
+                        onChange={(e) => handleUpdateItemStyle(selectedItem, 'textAlign', e.target.value)}
                         className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         aria-label="Text align"
                         title="Select text alignment"
@@ -430,7 +495,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                       </label>
                       <select
                         value={heroItems.find(item => item.id === selectedItem)?.styles.textTransform || 'none'}
-                        onChange={(e) => updateItemStyle(selectedItem, 'textTransform', e.target.value)}
+                        onChange={(e) => handleUpdateItemStyle(selectedItem, 'textTransform', e.target.value)}
                         className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         aria-label="Text transform"
                         title="Select text transformation"
@@ -456,7 +521,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                           max="10"
                           step="0.5"
                           value={parseFloat(heroItems.find(item => item.id === selectedItem)?.styles.letterSpacing || '0')}
-                          onChange={(e) => updateItemStyle(selectedItem, 'letterSpacing', `${e.target.value}px`)}
+                          onChange={(e) => handleUpdateItemStyle(selectedItem, 'letterSpacing', `${e.target.value}px`)}
                           className="w-full accent-blue-500"
                           aria-label="Letter spacing"
                           title="Adjust letter spacing"
@@ -481,7 +546,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                           max="2"
                           step="0.1"
                           value={parseFloat(heroItems.find(item => item.id === selectedItem)?.styles.lineHeight || '1.2')}
-                          onChange={(e) => updateItemStyle(selectedItem, 'lineHeight', e.target.value)}
+                          onChange={(e) => handleUpdateItemStyle(selectedItem, 'lineHeight', e.target.value)}
                           className="w-full accent-blue-500"
                           aria-label="Line height"
                           title="Adjust line height"
@@ -515,7 +580,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                       <input
                         type="number"
                         value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.marginTop?.replace('px', '') || '0')}
-                        onChange={(e) => updateItemStyle(selectedItem, 'marginTop', `${e.target.value}px`)}
+                        onChange={(e) => handleUpdateItemStyle(selectedItem, 'marginTop', `${e.target.value}px`)}
                             className="w-full p-1 bg-gray-700 border border-gray-600 rounded-md text-center"
                             min="0"
                             max="100"
@@ -534,7 +599,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                       <input
                         type="number"
                         value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.marginRight?.replace('px', '') || '0')}
-                        onChange={(e) => updateItemStyle(selectedItem, 'marginRight', `${e.target.value}px`)}
+                        onChange={(e) => handleUpdateItemStyle(selectedItem, 'marginRight', `${e.target.value}px`)}
                             className="w-full p-1 bg-gray-700 border border-gray-600 rounded-md text-center"
                             min="0"
                             max="100"
@@ -553,7 +618,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                       <input
                         type="number"
                         value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.marginBottom?.replace('px', '') || '0')}
-                        onChange={(e) => updateItemStyle(selectedItem, 'marginBottom', `${e.target.value}px`)}
+                        onChange={(e) => handleUpdateItemStyle(selectedItem, 'marginBottom', `${e.target.value}px`)}
                             className="w-full p-1 bg-gray-700 border border-gray-600 rounded-md text-center"
                             min="0"
                             max="100"
@@ -572,7 +637,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                       <input
                         type="number"
                         value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.marginLeft?.replace('px', '') || '0')}
-                        onChange={(e) => updateItemStyle(selectedItem, 'marginLeft', `${e.target.value}px`)}
+                        onChange={(e) => handleUpdateItemStyle(selectedItem, 'marginLeft', `${e.target.value}px`)}
                             className="w-full p-1 bg-gray-700 border border-gray-600 rounded-md text-center"
                             min="0"
                             max="100"
@@ -633,7 +698,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                                 
                                 // Create new padding string
                                 const newPadding = `${paddingValues[0]}px ${paddingValues[1]}px ${paddingValues[2]}px ${paddingValues[3]}px`;
-                                updateItemStyle(selectedItem, 'padding', newPadding);
+                                handleUpdateItemStyle(selectedItem, 'padding', newPadding);
                               }
                             }}
                             className="w-full accent-blue-500"
@@ -691,7 +756,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                                 
                                 paddingValues[1] = parseInt(e.target.value);
                                 const newPadding = `${paddingValues[0]}px ${paddingValues[1]}px ${paddingValues[2]}px ${paddingValues[3]}px`;
-                                updateItemStyle(selectedItem, 'padding', newPadding);
+                                handleUpdateItemStyle(selectedItem, 'padding', newPadding);
                               }
                             }}
                             className="w-full accent-blue-500"
@@ -750,7 +815,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                                 
                                 paddingValues[2] = parseInt(e.target.value);
                                 const newPadding = `${paddingValues[0]}px ${paddingValues[1]}px ${paddingValues[2]}px ${paddingValues[3]}px`;
-                                updateItemStyle(selectedItem, 'padding', newPadding);
+                                handleUpdateItemStyle(selectedItem, 'padding', newPadding);
                               }
                             }}
                             className="w-full accent-blue-500"
@@ -809,7 +874,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                                 
                                 paddingValues[3] = parseInt(e.target.value);
                                 const newPadding = `${paddingValues[0]}px ${paddingValues[1]}px ${paddingValues[2]}px ${paddingValues[3]}px`;
-                                updateItemStyle(selectedItem, 'padding', newPadding);
+                                handleUpdateItemStyle(selectedItem, 'padding', newPadding);
                               }
                             }}
                             className="w-full accent-blue-500"
@@ -871,7 +936,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                             min="10"
                             max="100"
                             value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.width?.replace('%', '') || '100')}
-                            onChange={(e) => updateItemStyle(selectedItem, 'width', `${e.target.value}%`)}
+                            onChange={(e) => handleUpdateItemStyle(selectedItem, 'width', `${e.target.value}%`)}
                             className="w-full accent-blue-500"
                             aria-label="Width percentage"
                             title="Adjust width percentage"
@@ -892,7 +957,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                             min="50"
                             max="600"
                             value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.height?.replace('px', '') || '300')}
-                            onChange={(e) => updateItemStyle(selectedItem, 'height', `${e.target.value}px`)}
+                            onChange={(e) => handleUpdateItemStyle(selectedItem, 'height', `${e.target.value}px`)}
                             className="w-full accent-blue-500"
                             aria-label="Height in pixels"
                             title="Adjust height in pixels"
@@ -913,7 +978,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                             min="0"
                             max="50"
                             value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.borderRadius?.replace('px', '') || '0')}
-                            onChange={(e) => updateItemStyle(selectedItem, 'borderRadius', `${e.target.value}px`)}
+                            onChange={(e) => handleUpdateItemStyle(selectedItem, 'borderRadius', `${e.target.value}px`)}
                             className="w-full accent-blue-500"
                             aria-label="Border radius"
                             title="Adjust border radius"
@@ -933,7 +998,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                   </label>
                   <select
                     value={heroItems.find(item => item.id === selectedItem)?.styles.position || 'relative'}
-                    onChange={(e) => updateItemStyle(selectedItem, 'position', e.target.value)}
+                    onChange={(e) => handleUpdateItemStyle(selectedItem, 'position', e.target.value)}
                       className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     aria-label="Position type"
                     title="Select position type"
@@ -953,7 +1018,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                         <input
                           type="number"
                           value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.top?.replace('%', '') || '0')}
-                          onChange={(e) => updateItemStyle(selectedItem, 'top', `${e.target.value}%`)}
+                          onChange={(e) => handleUpdateItemStyle(selectedItem, 'top', `${e.target.value}%`)}
                             className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           aria-label="Top position"
                           title="Enter top position percentage"
@@ -970,7 +1035,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                         <input
                           type="number"
                           value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.left?.replace('%', '') || '0')}
-                          onChange={(e) => updateItemStyle(selectedItem, 'left', `${e.target.value}%`)}
+                          onChange={(e) => handleUpdateItemStyle(selectedItem, 'left', `${e.target.value}%`)}
                             className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           aria-label="Left position"
                           title="Enter left position percentage"
@@ -989,7 +1054,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
             <input
                       type="number"
                       value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.zIndex || '1')}
-                      onChange={(e) => updateItemStyle(selectedItem, 'zIndex', e.target.value)}
+                      onChange={(e) => handleUpdateItemStyle(selectedItem, 'zIndex', e.target.value)}
                       className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       min="0"
                       max="100"
@@ -1010,7 +1075,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                         max="1"
                         step="0.1"
                         value={parseFloat(heroItems.find(item => item.id === selectedItem)?.styles.opacity || '1')}
-                        onChange={(e) => updateItemStyle(selectedItem, 'opacity', e.target.value)}
+                        onChange={(e) => handleUpdateItemStyle(selectedItem, 'opacity', e.target.value)}
                         className="w-full accent-blue-500"
                         aria-label="Opacity"
                         title="Adjust opacity"
@@ -1053,7 +1118,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                                 if (item) {
                                   const boxShadowParts = (item.styles.boxShadow || '0 2px 4px rgba(0,0,0,0.1)').split(' ');
                                   boxShadowParts[0] = e.target.value;
-                                  updateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
+                                  handleUpdateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
                                 }
                               }}
                               className="w-full accent-blue-500"
@@ -1078,7 +1143,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                                 if (item) {
                                   const boxShadowParts = (item.styles.boxShadow || '0 2px 4px rgba(0,0,0,0.1)').split(' ');
                                   boxShadowParts[1] = `${e.target.value}px`;
-                                  updateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
+                                  handleUpdateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
                                 }
                               }}
                               className="w-full accent-blue-500"
@@ -1105,7 +1170,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                               if (item) {
                                 const boxShadowParts = (item.styles.boxShadow || '0 2px 4px rgba(0,0,0,0.1)').split(' ');
                                 boxShadowParts[2] = `${e.target.value}px`;
-                                updateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
+                                handleUpdateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
                               }
                             }}
                             className="w-full accent-blue-500"
@@ -1137,7 +1202,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                                 const g = parseInt(hex.substring(2, 4), 16);
                                 const b = parseInt(hex.substring(4, 6), 16);
                                 boxShadowParts[3] = `rgba(${r},${g},${b},${opacity})`;
-                                updateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
+                                handleUpdateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
                               }
                             }}
                             className="h-10 w-10 rounded border border-gray-600 mr-2"
@@ -1162,7 +1227,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                                   // Default to black with new opacity if not rgba
                                   boxShadowParts[3] = `rgba(0,0,0,${e.target.value})`;
                                 }
-                                updateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
+                                handleUpdateItemStyle(selectedItem, 'boxShadow', boxShadowParts.join(' '));
                               }
                             }}
                             className="w-3/4 accent-blue-500 ml-2"
@@ -1202,7 +1267,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
                             min="0"
                             max="10"
                             value={parseInt(heroItems.find(item => item.id === selectedItem)?.styles.borderWidth?.replace('px', '') || '0')}
-                            onChange={(e) => updateItemStyle(selectedItem, 'borderWidth', `${e.target.value}px`)}
+                            onChange={(e) => handleUpdateItemStyle(selectedItem, 'borderWidth', `${e.target.value}px`)}
                             className="w-full accent-blue-500"
                             aria-label="Border width"
                             title="Adjust border width"
@@ -1221,7 +1286,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
             <input
                             type="color"
                             value={heroItems.find(item => item.id === selectedItem)?.styles.borderColor || '#000000'}
-                            onChange={(e) => updateItemStyle(selectedItem, 'borderColor', e.target.value)}
+                            onChange={(e) => handleUpdateItemStyle(selectedItem, 'borderColor', e.target.value)}
                             className="h-10 w-10 rounded border border-gray-600 mr-2"
                             aria-label="Border color"
                             title="Select border color"
@@ -1238,7 +1303,7 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
             </label>
                         <select
                           value={heroItems.find(item => item.id === selectedItem)?.styles.borderStyle || 'solid'}
-                          onChange={(e) => updateItemStyle(selectedItem, 'borderStyle', e.target.value)}
+                          onChange={(e) => handleUpdateItemStyle(selectedItem, 'borderStyle', e.target.value)}
                           className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           aria-label="Border style"
                           title="Select border style"
@@ -1296,15 +1361,12 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
           <div className="flex items-center">
           <input
             type="color"
-            value={heroStyles.backgroundColor}
-            onChange={(e) => setHeroStyles({...heroStyles, backgroundColor: e.target.value})}
+            value={heroStyles.backgroundColor || '#000000'}
+            onChange={(e) => handleUpdateHeroStyle('backgroundColor', e.target.value)}
               className="h-10 w-10 rounded border border-gray-600 mr-2"
             aria-label="Background color"
-            title="Select background color"
           />
-            <span className="text-xs text-gray-400">
-              {heroStyles.backgroundColor}
-            </span>
+            <span className="text-white">Background Color</span>
           </div>
         </div>
 
@@ -1314,36 +1376,30 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
               Background Image
             </label>
             <div className="flex gap-2">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-              className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 flex items-center justify-center gap-2"
-              title="Choose a background image"
-              >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Choose Image
-              </button>
+              <UploadButton
+                endpoint="imageUploader"
+                onClientUploadComplete={(res) => {
+                  if (res && res[0]?.url) {
+                    handleHeroBackgroundImageUpload(res[0].url);
+                  }
+                }}
+                onUploadError={(error) => {
+                  console.error('UploadThing error:', error);
+                }}
+                appearance={{
+                  button: 'flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg mr-2 transition-colors flex items-center justify-center gap-2',
+                }}
+              />
               {heroStyles.backgroundImage && (
                 <button
-                  onClick={() => setHeroStyles({...heroStyles, backgroundImage: ''})}
-                className="px-3 py-2 bg-red-500 rounded-lg hover:bg-red-600 flex items-center justify-center"
-                  title="Remove background image"
+                  onClick={() => handleUpdateHeroStyle('backgroundImage', '')}
+                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  aria-label="Remove background image"
                 >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  Remove
                 </button>
               )}
             </div>
-          {heroStyles.backgroundImage && (
-            <div className="mt-2 bg-gray-900 bg-opacity-50 p-2 rounded-lg">
-              <div className="text-xs text-gray-400 mb-1">Preview:</div>
-              <div className="relative w-full h-12 rounded-lg overflow-hidden">
-                <Image src={heroStyles.backgroundImage} alt="Background preview" className="w-full h-full object-cover" width={100} height={30} />
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Height */}
@@ -1357,14 +1413,13 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
               min="200"
             max="800"
             step="50"
-            value={parseInt(heroStyles.height)}
-            onChange={(e) => setHeroStyles({...heroStyles, height: `${e.target.value}px`})}
+            value={parseInt(heroStyles.height?.replace('px', '') || '500')}
+            onChange={(e) => handleUpdateHeroStyle('height', `${e.target.value}px`)}
               className="w-full accent-blue-500"
-            aria-label="Height"
-            title="Adjust height"
+            aria-label="Hero height"
           />
             <span className="bg-gray-700 px-2 py-1 rounded text-sm">
-              {heroStyles.height}
+              {parseInt(heroStyles.height?.replace('px', '') || '500')}px
             </span>
         </div>
         </div>
@@ -1381,35 +1436,87 @@ const HeroSidebar: React.FC<HeroSidebarProps> = ({
           </h3>
           
           <div className="bg-gray-800 p-2 rounded-xl shadow-inner">
-        <AIChat 
+        <AIChat
           apiKey={apiKey}
           currentConfig={{
-            navbarConfig: null,
             heroConfig: {
-              items: heroItems,
-              styles: heroStyles
-            },
-            collectionConfig: null
+              items: JSON.parse(JSON.stringify(heroItems)),
+              styles: JSON.parse(JSON.stringify(heroStyles))
+            }
           }}
-          // @ts-expect-error - Handling type mismatches between components
-          onConfigUpdate={handleAIConfigUpdate}
+          onConfigUpdate={(newConfig) => {
+            console.log('New config from AI:', newConfig);
+
+            if (newConfig && newConfig.heroConfig) {
+              // Make deep clones to avoid reference issues
+              const heroConfig = JSON.parse(JSON.stringify(newConfig.heroConfig));
+              
+              // Update local state first
+              if (heroConfig.items) {
+                console.log('Updating hero items from AI in sidebar:', heroConfig.items);
+                setHeroItems(heroConfig.items);
+              }
+              
+              if (heroConfig.styles) {
+                console.log('Updating hero styles from AI in sidebar:', heroConfig.styles);
+                setHeroStyles(heroConfig.styles);
+              }
+
+              // Call the parent's AI config update handler if available
+              if (onAIConfigUpdate) {
+                onAIConfigUpdate(newConfig);
+              }
+            }
+          }}
         />
           </div>
     </div>
   )}
 
       {/* Mobile optimization: Bottom bar with save button for small screens */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-gray-900 p-4 border-t border-gray-700 flex justify-center z-[10000]">
+      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-gray-900 p-4 border-t border-gray-700 flex justify-between z-[10000]">
         <button
-          onClick={handleSave}
-          className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg flex items-center justify-center gap-2 shadow-lg"
-          aria-label="Save changes (mobile)"
-          title="Save changes"
+          onClick={() => {
+            console.log("Mobile hero sidebar close button clicked");
+            handleClose();
+          }}
+          className="px-4 py-3 bg-gray-700 text-white rounded-lg flex items-center justify-center gap-2 shadow-lg"
+          aria-label="Close editor"
+          title="Close editor"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
-          Save Changes
+          Close
+        </button>
+        
+        <button
+          onClick={onSave}
+          disabled={isSaving}
+          className={`px-4 py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg ${
+            isSaving 
+              ? 'bg-gray-600 text-gray-300' 
+              : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
+          }`}
+          aria-label={isSaving ? "Saving changes..." : "Save changes"}
+          title={isSaving ? "Saving changes..." : "Save changes"}
+        >
+          {isSaving ? (
+            <>
+              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Save Changes
+            </>
+          )}
         </button>
       </div>
     </div>

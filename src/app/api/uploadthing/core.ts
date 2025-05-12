@@ -47,6 +47,40 @@ export const ourFileRouter = {
         return { uploadedBy: metadata.userId, fileUrl: file.ufsUrl, error: "Error processing upload" };
       }
     }),
+    
+  // Add new imageUploader for navbar images
+  imageUploader: f({
+    image: {
+      maxFileSize: "4MB", 
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async () => {
+      try {
+        // For navbar images, we can use a simpler auth check
+        const { userId: clerkUserId } = await auth();
+        
+        if (!clerkUserId) {
+          throw new UploadThingError("Unauthorized - Please login to upload images");
+        }
+        
+        // You can use the same database check or simplify for navbar images
+        return { userId: clerkUserId };
+      } catch (error) {
+        console.error("Error in imageUploader middleware:", error);
+        // Allow anonymous uploads if needed for testing
+        return { userId: "anonymous" };
+      }
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      try {
+        // Return the file URL to the client
+        return { uploadedBy: metadata.userId, url: file.url };
+      } catch (error) {
+        console.error("Error in imageUploader onUploadComplete:", error);
+        return { uploadedBy: metadata.userId, url: file.url, error: "Error processing upload" };
+      }
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

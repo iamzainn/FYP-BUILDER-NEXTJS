@@ -903,6 +903,9 @@ Return your response in this exact JSON format:
   }
 
   public async processUserRequest(userMessage: string, currentConfig: WebsiteConfig): Promise<AIResponse> {
+    console.log('AIService.processUserRequest called with message:', userMessage);
+    console.log('Current config passed to AIService:', JSON.stringify(currentConfig, null, 2));
+    
     try {
       const userMsg: Message = {
         role: 'user',
@@ -911,6 +914,39 @@ Return your response in this exact JSON format:
       this.messages.push(userMsg);
 
       const response = await this.getMockResponse(userMessage, currentConfig);
+      console.log('Response from Gemini API:', JSON.stringify(response, null, 2));
+      
+      // Ensure we have a properly structured response
+      if (!response) {
+        throw new Error('No response received from AI service');
+      }
+      
+      // Validate and fix navbarConfig if it exists
+      if (response.navbarConfig) {
+        // Ensure items is present and is an array
+        if (!response.navbarConfig.items || !Array.isArray(response.navbarConfig.items)) {
+          response.navbarConfig.items = currentConfig.navbarConfig?.items || [];
+          console.log('Fixed missing or invalid items in navbarConfig');
+        }
+        
+        // Ensure styles is present
+        if (!response.navbarConfig.styles) {
+          response.navbarConfig.styles = currentConfig.navbarConfig?.styles || {
+            backgroundColor: '#ffffff',
+            padding: '1rem',
+            fontFamily: 'Inter',
+            color: '#1e40af',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          };
+          console.log('Fixed missing styles in navbarConfig');
+        }
+        
+        // Ensure boxShadow property exists in styles
+        if (!response.navbarConfig.styles.boxShadow) {
+          response.navbarConfig.styles.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+          console.log('Added missing boxShadow property to navbarConfig styles');
+        }
+      }
       
       // Add detailed response to chat history
       this.messages.push({
@@ -920,8 +956,19 @@ Return your response in this exact JSON format:
 
       return response;
     } catch (error) {
-      console.error('Error processing request:', error);
-      throw error;
+      console.error('Error processing request in AIService:', error);
+      
+      // Add error message to chat history
+      this.messages.push({
+        role: 'assistant',
+        content: 'Sorry, I encountered an error while processing your request. Please try again.'
+      });
+      
+      // Return a safe fallback response
+      return {
+        message: `Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}. Please try again.`,
+        navbarConfig: currentConfig.navbarConfig
+      };
     }
   }
 

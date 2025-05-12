@@ -1,193 +1,144 @@
 'use client';
 
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import React from 'react';
 import FooterSidebar from './footer/sidebar';
-
-interface FooterColumn {
-  id: string;
-  title: string;
-  links: FooterLink[];
-}
-
-interface FooterLink {
-  id: string;
-  label: string;
-  href: string;
-}
-
-interface SocialLink {
-  id: string;
-  platform: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
-interface FooterStyles {
-  backgroundColor: string;
-  textColor: string;
-  headingColor: string;
-  linkColor: string;
-  linkHoverColor: string;
-  borderColor: string;
-  padding: string;
-  fontFamily: string;
-  // Add gradient properties
-  useGradient: boolean;
-  gradientFrom: string;
-  gradientTo: string;
-  gradientDirection: string;
-  footerBottom: {
-    backgroundColor: string;
-    textColor: string;
-    useGradient: boolean;
-    gradientFrom: string;
-    gradientTo: string;
-    gradientDirection: string;
-  };
-}
+import { WebsiteConfig, FooterColumn, FooterLink, FooterStyles, SocialLink } from '@/types/websiteConfig';
 
 interface FooterProps {
-  isAdmin?: boolean;
+  componentId?: number;
+  useDirectSave?: boolean;
   isEditing?: boolean;
   onStartEdit?: () => void;
-  onSave?: () => void;
+  onCloseSidebar?: () => void;
+  onSave?: (columns: FooterColumn[], styles: FooterStyles, socialLinks: SocialLink[]) => void;
   apiKey?: string;
   savedColumns?: FooterColumn[] | null;
   savedStyles?: FooterStyles | null;
   savedSocialLinks?: SocialLink[] | null;
+  onAIConfigUpdate?: (config: WebsiteConfig) => void;
+  onColumnsChange?: (columns: FooterColumn[]) => void;
+  onStylesChange?: (styles: FooterStyles) => void;
+  onSocialLinksChange?: (socialLinks: SocialLink[]) => void;
 }
 
 // Default footer columns with links
 const defaultColumns: FooterColumn[] = [
   {
-    id: 'shop',
-    title: 'Shop',
-    links: [
-      { id: 'shop-1', label: 'All Products', href: '/products' },
-      { id: 'shop-2', label: 'New Arrivals', href: '/products/new' },
-      { id: 'shop-3', label: 'Best Sellers', href: '/products/best-sellers' },
-      { id: 'shop-4', label: 'Sale Items', href: '/products/sale' }
-    ]
-  },
-  {
-    id: 'account',
-    title: 'Account',
-    links: [
-      { id: 'account-1', label: 'My Account', href: '/account' },
-      { id: 'account-2', label: 'Order History', href: '/account/orders' },
-      { id: 'account-3', label: 'Wishlist', href: '/account/wishlist' },
-      { id: 'account-4', label: 'Returns', href: '/account/returns' }
-    ]
-  },
-  {
-    id: 'support',
-    title: 'Support',
-    links: [
-      { id: 'support-1', label: 'Help Center', href: '/help' },
-      { id: 'support-2', label: 'Contact Us', href: '/contact' },
-      { id: 'support-3', label: 'Shipping Info', href: '/shipping' },
-      { id: 'support-4', label: 'Returns & Exchanges', href: '/returns' }
-    ]
-  },
-  {
-    id: 'company',
+    id: 'column-1',
     title: 'Company',
     links: [
-      { id: 'company-1', label: 'About Us', href: '/about' },
-      { id: 'company-2', label: 'Careers', href: '/careers' },
-      { id: 'company-3', label: 'Privacy Policy', href: '/privacy' },
-      { id: 'company-4', label: 'Terms of Service', href: '/terms' }
-    ]
-  }
+      { id: 'link-1-1', label: 'About Us', href: '/about' },
+      { id: 'link-1-2', label: 'Careers', href: '/careers' },
+      { id: 'link-1-3', label: 'Blog', href: '/blog' },
+    ],
+  },
+  {
+    id: 'column-2',
+    title: 'Resources',
+    links: [
+      { id: 'link-2-1', label: 'Documentation', href: '/docs' },
+      { id: 'link-2-2', label: 'Help Center', href: '/help' },
+      { id: 'link-2-3', label: 'Guides', href: '/guides' },
+    ],
+  },
+  {
+    id: 'column-3',
+    title: 'Legal',
+    links: [
+      { id: 'link-3-1', label: 'Privacy Policy', href: '/privacy' },
+      { id: 'link-3-2', label: 'Terms of Service', href: '/terms' },
+      { id: 'link-3-3', label: 'Cookie Policy', href: '/cookies' },
+    ],
+  },
 ];
 
 // Default social links with icons
 const defaultSocialLinks: SocialLink[] = [
   {
-    id: 'facebook',
+    id: 'social-1',
     platform: 'Facebook',
     href: 'https://facebook.com',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
         <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
       </svg>
-    )
+    ),
   },
   {
-    id: 'instagram',
-    platform: 'Instagram',
-    href: 'https://instagram.com',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-      </svg>
-    )
-  },
-  {
-    id: 'twitter',
+    id: 'social-2',
     platform: 'Twitter',
     href: 'https://twitter.com',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
         <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
       </svg>
-    )
+    ),
   },
   {
-    id: 'youtube',
-    platform: 'YouTube',
-    href: 'https://youtube.com',
+    id: 'social-3',
+    platform: 'Instagram',
+    href: 'https://instagram.com',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
       </svg>
-    )
-  }
+    ),
+  },
 ];
 
-// Default styles for the footer with gradient options
+// Default footer styles
 const defaultStyles: FooterStyles = {
-  backgroundColor: '#f9fafb',
-  textColor: '#4b5563',
-  headingColor: '#111827',
-  linkColor: '#4b5563',
-  linkHoverColor: '#1e40af',
-  borderColor: '#e5e7eb',
+  backgroundColor: '#1f2937',
+  textColor: '#f3f4f6',
+  headingColor: '#ffffff',
+  linkColor: '#d1d5db',
+  linkHoverColor: '#ffffff',
+  borderColor: '#374151',
+  fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   padding: '3rem 1.5rem',
-  fontFamily: 'Inter, sans-serif',
-  // Add gradient properties
   useGradient: false,
-  gradientFrom: '#f9fafb',
-  gradientTo: '#e5e7eb',
+  gradientFrom: '#1f2937',
+  gradientTo: '#111827',
   gradientDirection: 'to bottom',
   footerBottom: {
-    backgroundColor: '#f3f4f6',
-    textColor: '#6b7280',
+    backgroundColor: '#111827',
+    textColor: '#9ca3af',
     useGradient: false,
-    gradientFrom: '#f3f4f6',
-    gradientTo: '#e5e7eb',
-    gradientDirection: 'to bottom'
-  }
+    gradientFrom: '#111827',
+    gradientTo: '#0f172a',
+    gradientDirection: 'to bottom',
+  },
 };
 
-export default function Footer({
-  isAdmin = false,
+const Footer: React.FC<FooterProps> = ({
   isEditing = false,
   onStartEdit,
+  onCloseSidebar,
   onSave,
   apiKey,
   savedColumns = null,
   savedStyles = null,
-  savedSocialLinks = null
-}: FooterProps) {
-  const [footerColumns, setFooterColumns] = useState<FooterColumn[]>(savedColumns || defaultColumns);
+  savedSocialLinks = null,
+  onColumnsChange,
+  onStylesChange,
+  onSocialLinksChange,
+  onAIConfigUpdate,
+  componentId,
+  useDirectSave = false
+}) => {
+  const [columns, setColumns] = useState<FooterColumn[]>(savedColumns || defaultColumns);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(savedSocialLinks || defaultSocialLinks);
   const [footerStyles, setFooterStyles] = useState<FooterStyles>(savedStyles || defaultStyles);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Change selectedItem to be a string representation that the sidebar can work with
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  // Internal state to track what type of item is selected
+  const [selectedItemType, setSelectedItemType] = useState<string | null>(null);
 
   // Check for mobile screen size
   useEffect(() => {
@@ -208,7 +159,19 @@ export default function Footer({
   // Listen for item selection events from the sidebar
   useEffect(() => {
     const handleSelectItem = (event: CustomEvent) => {
-      setSelectedItem(event.detail);
+      if (event.detail && typeof event.detail === 'object' && 'type' in event.detail && 'id' in event.detail) {
+        // Convert the object to a string format for the sidebar
+        const type = event.detail.type;
+        const id = event.detail.id;
+        
+        if (type && id) {
+          setSelectedItemType(type);
+          setSelectedItem(`${type}-${id}`);
+        } else {
+          setSelectedItemType(null);
+          setSelectedItem(null);
+        }
+      }
     };
     
     window.addEventListener('selectFooterItem', handleSelectItem as EventListener);
@@ -218,6 +181,27 @@ export default function Footer({
     };
   }, []);
 
+  // Load saved data or use defaults
+  useEffect(() => {
+    if (savedColumns) {
+      // Create a deep copy to ensure we're working with fresh objects
+      const columnsCopy = JSON.parse(JSON.stringify(savedColumns));
+      setColumns(columnsCopy);
+    }
+    
+    if (savedStyles) {
+      // Create a deep copy to ensure we're working with fresh objects
+      const stylesCopy = JSON.parse(JSON.stringify(savedStyles));
+      setFooterStyles(stylesCopy);
+    }
+    
+    if (savedSocialLinks) {
+      // Create a deep copy to ensure we're working with fresh objects
+      const socialLinksCopy = JSON.parse(JSON.stringify(savedSocialLinks));
+      setSocialLinks(socialLinksCopy);
+    }
+  }, [savedColumns, savedStyles, savedSocialLinks]);
+
   // Load saved settings from localStorage if not provided through props
   useEffect(() => {
     if (!savedColumns && !savedStyles) {
@@ -225,59 +209,215 @@ export default function Footer({
       const savedFooterStyles = localStorage.getItem('footerStyles');
       const savedSocialLinks = localStorage.getItem('footerSocialLinks');
       
-      if (savedFooterColumns) setFooterColumns(JSON.parse(savedFooterColumns));
+      if (savedFooterColumns) setColumns(JSON.parse(savedFooterColumns));
       if (savedFooterStyles) setFooterStyles(JSON.parse(savedFooterStyles));
       if (savedSocialLinks) setSocialLinks(JSON.parse(savedSocialLinks));
     }
   }, [savedColumns, savedStyles]);
 
+  // Add effect to save to local storage when changes occur
+  useEffect(() => {
+    if (columns) {
+      localStorage.setItem('footerColumns', JSON.stringify(columns));
+    }
+    if (footerStyles) {
+      localStorage.setItem('footerStyles', JSON.stringify(footerStyles));
+    }
+    if (socialLinks) {
+      localStorage.setItem('footerSocialLinks', JSON.stringify(socialLinks));
+    }
+  }, [columns, footerStyles, socialLinks]);
+
   // Handle newsletter submission
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, you would call an API to store the email
-    alert(`Thank you for subscribing with: ${newsletterEmail}`);
+    console.log('Newsletter subscription for:', newsletterEmail);
+    // Here you would typically send this to your email service
     setNewsletterEmail('');
   };
 
-  // Handle AI configuration updates
-  const handleAIConfigUpdate = (newConfig: { footerConfig: { columns: FooterColumn[], styles: FooterStyles, socialLinks: SocialLink[] } }) => {
+  // Handle AI config updates - improved with deep cloning
+  const handleAIConfigUpdate = (newConfig: WebsiteConfig) => {
+    console.log('Received AI config update for footer:', JSON.stringify(newConfig.footerConfig, null, 2));
+    
     if (newConfig.footerConfig) {
+      let hasChanges = false;
+      
       if (newConfig.footerConfig.columns) {
-        setFooterColumns(newConfig.footerConfig.columns);
-        localStorage.setItem('footerColumns', JSON.stringify(newConfig.footerConfig.columns));
+        console.log('Updating footer columns from AI:', JSON.stringify(newConfig.footerConfig.columns, null, 2));
+        
+        // Create deep copy of columns
+        const deepCopiedColumns = JSON.parse(JSON.stringify(newConfig.footerConfig.columns));
+        
+        // Update local state
+        setColumns(deepCopiedColumns);
+        hasChanges = true;
+        
+        // Notify parent component immediately
+        if (onColumnsChange) {
+          console.log('Notifying parent of AI-generated column changes');
+          onColumnsChange(deepCopiedColumns);
+        }
       }
       
       if (newConfig.footerConfig.styles) {
-        setFooterStyles(newConfig.footerConfig.styles);
-        localStorage.setItem('footerStyles', JSON.stringify(newConfig.footerConfig.styles));
+        console.log('Updating footer styles from AI:', JSON.stringify(newConfig.footerConfig.styles, null, 2));
+        
+        // Create deep copy of styles
+        const deepCopiedStyles = JSON.parse(JSON.stringify(newConfig.footerConfig.styles));
+        
+        // Update local state
+        setFooterStyles(deepCopiedStyles);
+        hasChanges = true;
+        
+        // Notify parent component immediately
+        if (onStylesChange) {
+          console.log('Notifying parent of AI-generated style changes');
+          onStylesChange(deepCopiedStyles);
+        }
       }
       
       if (newConfig.footerConfig.socialLinks) {
-        setSocialLinks(newConfig.footerConfig.socialLinks);
-        localStorage.setItem('footerSocialLinks', JSON.stringify(newConfig.footerConfig.socialLinks));
+        console.log('Updating footer social links from AI:', JSON.stringify(newConfig.footerConfig.socialLinks, null, 2));
+        
+        // Create deep copy of social links
+        const deepCopiedSocialLinks = JSON.parse(JSON.stringify(newConfig.footerConfig.socialLinks));
+        
+        // Update local state
+        setSocialLinks(deepCopiedSocialLinks);
+        hasChanges = true;
+        
+        // Notify parent component immediately
+        if (onSocialLinksChange) {
+          console.log('Notifying parent of AI-generated social link changes');
+          onSocialLinksChange(deepCopiedSocialLinks);
+        }
+      }
+      
+      // If we've made changes, simulate a save to ensure changes are persisted
+      if (hasChanges) {
+        // Save to localStorage as a backup
+        localStorage.setItem('footerColumns', JSON.stringify(columns));
+        localStorage.setItem('footerStyles', JSON.stringify(footerStyles));
+        localStorage.setItem('footerSocialLinks', JSON.stringify(socialLinks));
+        
+        console.log('AI-generated changes have been applied and saved locally');
       }
     }
   };
 
-  // Save footer settings
-  const handleSave = () => {
-    localStorage.setItem('footerColumns', JSON.stringify(footerColumns));
-    localStorage.setItem('footerStyles', JSON.stringify(footerStyles));
-    localStorage.setItem('footerSocialLinks', JSON.stringify(socialLinks));
-    setSelectedItem(null);
-    onSave?.();
+  // New function to close the editing sidebar
+  const handleCloseEditMode = () => {
+    if (onCloseSidebar) {
+      console.log("Closing Footer editing sidebar using onCloseSidebar");
+      onCloseSidebar();
+    } else if (onStartEdit) {
+      console.log("Closing Footer editing sidebar using onStartEdit (legacy method)");
+      // Fallback to the old method if onCloseSidebar is not provided
+      onStartEdit();
+    } else {
+      console.warn("No close method provided to Footer component");
+    }
   };
 
-  // Check if an item is selected by ID
-  const isItemSelected = (type: string, id: string) => {
-    if (!selectedItem) return false;
+  // New function to save directly to the component endpoint
+  const handleDirectSave = async () => {
+    if (!componentId) {
+      console.error("Cannot perform direct save: Missing componentId");
+      return;
+    }
+
+    console.log("Starting direct save operation...");
+    console.log("Component ID:", componentId);
     
-    if (type === 'column') {
+    setIsSaving(true);
+    
+    try {
+      // Clone data to avoid reference issues
+      const clonedColumns = JSON.parse(JSON.stringify(columns));
+      const clonedStyles = JSON.parse(JSON.stringify(footerStyles));
+      const clonedSocialLinks = JSON.parse(JSON.stringify(socialLinks));
+      
+      const content = {
+        columns: clonedColumns,
+        styles: clonedStyles,
+        socialLinks: clonedSocialLinks
+      };
+      
+      console.log("Preparing API payload:", content);
+      
+      const endpoint = `/api/components/${componentId}`;
+      console.log("API endpoint:", endpoint);
+      
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        console.error("API Error:", { 
+          status: response.status,
+          statusText: response.statusText,
+          data: responseData
+        });
+        return;
+      }
+      
+      console.log("Save successful:", responseData);
+      
+      // Auto-close sidebar after successful save
+      handleCloseEditMode();
+    } catch (error) {
+      console.error("Save failed with exception:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Modify the existing handleSave function to use the direct approach when specified
+  const handleSave = () => {
+    console.log("handleSave called with:", { useDirectSave, componentId });
+    
+    if (useDirectSave && componentId) {
+      console.log("Using direct save mode");
+      handleDirectSave();
+      return;
+    }
+    
+    // Traditional save method (localStorage + parent notification)
+    console.log("Using traditional save method");
+    localStorage.setItem("builder.footer", JSON.stringify({ 
+      columns, 
+      styles: footerStyles, 
+      socialLinks 
+    }));
+    console.log("Saved to localStorage:", { 
+      columns, 
+      styles: footerStyles, 
+      socialLinks 
+    });
+    
+    if (onSave) {
+      onSave(columns, footerStyles, socialLinks);
+      console.log("Parent component notified via onSave");
+    }
+  };
+
+  // Check if an item is selected by ID - updated for string representation
+  const isItemSelected = (type: string, id: string) => {
+    if (!selectedItem || !selectedItemType) return false;
+    
+    if (type === 'column' && selectedItemType === 'column') {
       return selectedItem === `column-${id}`;
-    } else if (type === 'link' && selectedItem.startsWith('link-')) {
+    } else if (type === 'link' && selectedItemType === 'link') {
       const parts = selectedItem.split('-');
       return parts.length >= 3 && parts[2] === id;
-    } else if (type === 'social') {
+    } else if (type === 'social' && selectedItemType === 'social') {
       return selectedItem === `social-${id}`;
     }
     
@@ -313,6 +453,86 @@ export default function Footer({
     };
   };
 
+  // Update column data
+  const updateColumn = (columnId: string, newData: Partial<FooterColumn>) => {
+    console.log(`Updating column ${columnId} with:`, newData);
+    
+    // Create a deep copy of the columns to avoid reference issues
+    const updatedColumns = JSON.parse(JSON.stringify(
+      columns.map(col => col.id === columnId ? { ...col, ...newData } : col)
+    ));
+    
+    // Update local state
+    setColumns(updatedColumns);
+    
+    // Notify parent of changes
+    if (onColumnsChange) {
+      console.log('Notifying parent of column changes');
+      onColumnsChange(updatedColumns);
+    }
+  };
+  
+  // Update link data
+  const updateLink = (columnId: string, linkId: string, newData: Partial<FooterLink>) => {
+    console.log(`Updating link ${linkId} in column ${columnId} with:`, newData);
+    
+    // Create a deep copy and update the specific link
+    const updatedColumns = JSON.parse(JSON.stringify(columns.map(col => {
+      if (col.id === columnId) {
+        const updatedLinks = col.links.map(link => 
+          link.id === linkId ? { ...link, ...newData } : link
+        );
+        return { ...col, links: updatedLinks };
+      }
+      return col;
+    })));
+    
+    // Update local state
+    setColumns(updatedColumns);
+    
+    // Notify parent of changes
+    if (onColumnsChange) {
+      console.log('Notifying parent of link changes');
+      onColumnsChange(updatedColumns);
+    }
+  };
+  
+  // Update social link
+  const updateSocialLink = (linkId: string, newData: Partial<SocialLink>) => {
+    console.log(`Updating social link ${linkId} with:`, newData);
+    
+    // Create a deep copy and update the specific social link
+    const updatedLinks = JSON.parse(JSON.stringify(
+      socialLinks.map(link => link.id === linkId ? { ...link, ...newData } : link)
+    ));
+    
+    // Update local state
+    setSocialLinks(updatedLinks);
+    
+    // Notify parent of changes
+    if (onSocialLinksChange) {
+      console.log('Notifying parent of social link changes');
+      onSocialLinksChange(updatedLinks);
+    }
+  };
+  
+  // Update footer styles
+  const updateFooterStyle = (styleKey: string, value: any) => {
+    console.log(`Updating footer style ${styleKey} to:`, value);
+    
+    // Create a deep copy of the styles to avoid reference issues
+    const updatedStyles = JSON.parse(JSON.stringify({ ...footerStyles, [styleKey]: value }));
+    
+    // Update local state
+    setFooterStyles(updatedStyles);
+    
+    // Notify parent of changes
+    if (onStylesChange) {
+      console.log('Notifying parent of style changes');
+      onStylesChange(updatedStyles);
+    }
+  };
+
   return (
     <footer 
       style={{
@@ -320,12 +540,12 @@ export default function Footer({
         color: footerStyles.textColor,
         fontFamily: footerStyles.fontFamily,
         padding: isMobile ? '2rem 1rem' : footerStyles.padding,
-        position: isAdmin ? 'relative' : 'static',
-        marginTop: isAdmin ? '2rem' : '0'
+        position: 'static',
+        marginTop: '0'
       }}
-      className={`w-full ${isAdmin && !isEditing ? 'hover:ring-2 hover:ring-blue-500 cursor-pointer' : ''} ${isEditing ? 'lg:mr-96' : ''}`}
+      className={`w-full ${!isEditing ? 'hover:ring-2 hover:ring-blue-500 cursor-pointer' : ''} ${isEditing ? 'lg:mr-96' : ''}`}
       onClick={() => {
-        if (isAdmin && !isEditing && onStartEdit) {
+        if (!isEditing && onStartEdit) {
           onStartEdit();
         }
       }}
@@ -440,7 +660,7 @@ export default function Footer({
           </div>
           
           {/* Footer Navigation Columns - reorganized for mobile */}
-          {footerColumns.map(column => (
+          {columns.map(column => (
             <div 
               key={column.id} 
               onClick={() => {
@@ -525,33 +745,27 @@ export default function Footer({
       </div>
       
       {/* Edit Button for Admin Mode */}
-      {isAdmin && !isEditing && (
-        <button
-          onClick={() => onStartEdit?.()}
-          className="absolute top-4 right-4 bg-blue-600 text-white p-2 rounded-md shadow-lg hover:bg-blue-700 transition-colors"
-          aria-label="Edit footer"
-          title="Edit footer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </button>
+      {isEditing && (
+        <FooterSidebar
+          isEditing={isEditing}
+          selectedItem={selectedItem}
+          footerColumns={columns}
+          socialLinks={socialLinks}
+          footerStyles={footerStyles}
+          handleSave={handleSave}
+          handleClose={handleCloseEditMode}
+          setFooterColumns={setColumns}
+          setSocialLinks={setSocialLinks}
+          setFooterStyles={setFooterStyles}
+          apiKey={apiKey}
+          handleAIConfigUpdate={handleAIConfigUpdate}
+          useDirectSave={useDirectSave}
+          componentId={componentId}
+          isSaving={isSaving}
+        />
       )}
-      
-      {/* Footer Sidebar Component */}
-      <FooterSidebar 
-        isEditing={isEditing}
-        selectedItem={selectedItem}
-        footerColumns={footerColumns}
-        socialLinks={socialLinks}
-        footerStyles={footerStyles}
-        handleSave={handleSave}
-        setFooterColumns={setFooterColumns}
-        setSocialLinks={setSocialLinks}
-        setFooterStyles={setFooterStyles}
-        apiKey={apiKey}
-        handleAIConfigUpdate={handleAIConfigUpdate}
-      />
     </footer>
   );
-} 
+}
+
+export default Footer; 

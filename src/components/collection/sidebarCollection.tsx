@@ -1,17 +1,6 @@
 import React from 'react';
 import AIChat from '../AIChat';
-import { CollectionItem, CollectionStyles, WebsiteConfig } from '../../types/websiteConfig';
-
-interface SidebarCollectionProps {
-  isEditing: boolean;
-  collectionItems: CollectionItem[];
-  collectionStyles: CollectionStyles;
-  handleSave: () => void;
-  updateGlobalStyle: (styleKey: string, value: string | number | Record<string, string>) => void;
-  updateAllItemsStyle: (styleKey: string, value: string) => void;
-  apiKey?: string;
-  handleAIConfigUpdate: (newConfig: WebsiteConfig) => void;
-}
+import { CollectionItem, CollectionStyles, WebsiteConfig, SidebarCollectionProps } from './types';
 
 const SidebarCollection: React.FC<SidebarCollectionProps> = ({
   isEditing,
@@ -21,7 +10,9 @@ const SidebarCollection: React.FC<SidebarCollectionProps> = ({
   updateGlobalStyle,
   updateAllItemsStyle,
   apiKey,
-  handleAIConfigUpdate
+  handleAIConfigUpdate,
+  onItemsChange,
+  onStylesChange
 }) => {
   if (!isEditing) return null;
 
@@ -43,6 +34,8 @@ const SidebarCollection: React.FC<SidebarCollectionProps> = ({
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
             className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label={label}
+            title={label}
           >
             {options.map((option) => (
               <option key={option.value} value={option.value}>
@@ -57,6 +50,8 @@ const SidebarCollection: React.FC<SidebarCollectionProps> = ({
               value={value || '#000000'}
               onChange={(e) => onChange(e.target.value)}
               className="h-9 w-9 rounded border border-gray-600 mr-2 cursor-pointer"
+              aria-label={`Color for ${label}`}
+              title={`Choose a color for ${label}`}
             />
             <input
               type="text"
@@ -76,6 +71,8 @@ const SidebarCollection: React.FC<SidebarCollectionProps> = ({
               value={value || '0.5'}
               onChange={(e) => onChange(e.target.value)}
               className="flex-1 mr-2"
+              aria-label={`Range for ${label}`}
+              title={`Adjust the ${label}`}
             />
             <span className="text-sm text-gray-300 w-12 text-right">
               {parseFloat(value || '0.5').toFixed(1)}
@@ -405,6 +402,8 @@ const SidebarCollection: React.FC<SidebarCollectionProps> = ({
                       updateAllItemsStyle('imageOverlay', rgba);
                     }}
                     className="h-9 w-9 rounded border border-gray-600 mr-2 cursor-pointer"
+                    aria-label="Overlay color"
+                    title="Choose overlay color"
                   />
                   <span className="flex-1 text-sm text-gray-300">Overlay color with opacity</span>
                 </div>
@@ -491,11 +490,30 @@ const SidebarCollection: React.FC<SidebarCollectionProps> = ({
               apiKey={apiKey}
               currentConfig={{
                 collectionConfig: {
-                  items: collectionItems,
-                  styles: collectionStyles
+                  items: JSON.parse(JSON.stringify(collectionItems)),
+                  styles: JSON.parse(JSON.stringify(collectionStyles))
                 }
               }}
-              onConfigUpdate={handleAIConfigUpdate}
+              onConfigUpdate={(newConfig) => {
+                console.log('New config from AI in SidebarCollection:', newConfig);
+                
+                if (newConfig && (newConfig as any).collectionConfig) {
+                  // Make deep clones to avoid reference issues
+                  const collectionConfig = JSON.parse(JSON.stringify((newConfig as any).collectionConfig));
+                  
+                  // Call the parent's AI config update handler
+                  handleAIConfigUpdate(newConfig);
+                  
+                  // Directly update local state if required
+                  if (onItemsChange && collectionConfig.items) {
+                    onItemsChange(collectionConfig.items);
+                  }
+                  
+                  if (onStylesChange && collectionConfig.styles) {
+                    onStylesChange(collectionConfig.styles);
+                  }
+                }
+              }}
             />
           </div>
         )}

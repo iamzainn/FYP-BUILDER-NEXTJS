@@ -121,10 +121,10 @@ model Order {
   address        String?       @db.Text
   paymentMethod  PaymentMethod @default(CREDIT_CARD) @map("payment_method")
   paymentStatus  PaymentStatus @default(PENDING) @map("payment_status")
-  discountId     Int?          @map("discount_id")
   discountAmount Float?        @default(0) @map("discount_amount")
   createdAt      DateTime      @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  discountId     Int?          @map("discount_id")
   store          UserStore     @relation(fields: [storeId], references: [id], onDelete: Cascade)
   customer       StoreCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   discount       Discount?     @relation(fields: [discountId], references: [id], onDelete: SetNull)
@@ -150,32 +150,6 @@ model OrderItem {
   @@map("order_items")
 }
 
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
-}
-
-enum PaymentMethod {
-  CREDIT_CARD
-  SQUARE
-  CASH_ON_DELIVERY
-}
-
-enum DiscountType {
-  PERCENTAGE
-  FIXED_AMOUNT
-}
-
 model Discount {
   id                 Int                     @id @default(autoincrement())
   couponCode         String                  @db.VarChar(50)
@@ -185,13 +159,13 @@ model Discount {
   startDate          DateTime                @map("start_date") @db.DateTime(0)
   endDate            DateTime                @map("end_date") @db.DateTime(0)
   isActive           Boolean                 @default(true) @map("is_active")
-  usageLimit         Int?                    @map("usage_limit") // Threshold set by admin
-  usageCount         Int                     @default(0) @map("usage_count") // Total times discount has been used
-  perCustomerServing Boolean                 @default(false) @map("per_customer_serving") // Toggle for per-customer usage
-  maxUsesPerCustomer Int?                    @default(1) @map("max_uses_per_customer") // Used when perCustomerServing is true
-  products           DiscountProduct[]
+  usageLimit         Int?                    @map("usage_limit")
+  usageCount         Int                     @default(0) @map("usage_count")
+  perCustomerServing Boolean                 @default(false) @map("per_customer_serving")
+  maxUsesPerCustomer Int?                    @default(1) @map("max_uses_per_customer")
   createdAt          DateTime                @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt          DateTime                @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  products           DiscountProduct[]
   store              UserStore               @relation(fields: [storeId], references: [id], onDelete: Cascade)
   orders             Order[]
   customerUsage      DiscountCustomerUsage[]
@@ -263,6 +237,69 @@ model PageComponent {
   @@map("page_components")
 }
 
+model PaymentGateway {
+  id            Int       @id @default(autoincrement())
+  storeId       Int       @map("store_id")
+  provider      String    @default("SQUARE") @db.VarChar(50)
+  accessToken   String    @map("access_token") @db.VarChar(255)
+  locationId    String?   @map("location_id") @db.VarChar(255)
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  applicationId String?   @map("application_id") @db.VarChar(255)
+  environment   String    @default("sandbox") @map("environment") @db.VarChar(50)
+  store         UserStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId], map: "idx_payment_gateway_store_id")
+  @@map("payment_gateways")
+}
+
+model Notification {
+  id          Int                  @id @default(autoincrement())
+  title       String               @db.VarChar(255)
+  content     String               @db.Text
+  type        NotificationType     @default(SYSTEM_ALERT)
+  priority    NotificationPriority @default(MEDIUM)
+  actionUrl   String?              @db.VarChar(255)
+  createdAt   DateTime             @default(now())
+  data        String?              @db.Text
+  isRead      Boolean              @default(false)
+  storeId     String
+  updatedAt   DateTime             @default(now()) @updatedAt
+  userStoreId Int?
+  UserStore   UserStore?           @relation(fields: [userStoreId], references: [id])
+
+  @@index([storeId])
+  @@index([userStoreId])
+  @@map("notifications")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  SQUARE
+  CASH_ON_DELIVERY
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
 enum PageType {
   HOME
   PRODUCTS
@@ -270,23 +307,6 @@ enum PageType {
   CONTACT
   CHECKOUT
   CUSTOM
-}
-
-model PaymentGateway {
-  id            Int       @id @default(autoincrement())
-  storeId       Int       @map("store_id")
-  provider      String    @default("SQUARE") @db.VarChar(50)
-  accessToken   String    @map("access_token") @db.VarChar(255)
-  applicationId String?   @map("application_id") @db.VarChar(255)
-  locationId    String?   @map("location_id") @db.VarChar(255)
-  environment   String    @default("sandbox") @map("environment") @db.VarChar(50)
-  isActive      Boolean   @default(true) @map("is_active")
-  createdAt     DateTime  @default(now()) @map("created_at") @db.DateTime(0)
-  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
-  store         UserStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
-
-  @@index([storeId], map: "idx_payment_gateway_store_id")
-  @@map("payment_gateways")
 }
 
 enum NotificationType {
@@ -305,24 +325,4 @@ enum NotificationPriority {
   LOW
   MEDIUM
   HIGH
-}
-
-model Notification {
-  id          Int                  @id @default(autoincrement())
-  storeId     String // Use String to match your storeId format
-  title       String               @db.VarChar(255)
-  content     String               @db.Text
-  type        NotificationType     @default(SYSTEM_ALERT)
-  priority    NotificationPriority @default(MEDIUM)
-  isRead      Boolean              @default(false)
-  actionUrl   String?              @db.VarChar(255)
-  data        String?              @db.Text // JSON stringified data
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @default(now()) @updatedAt
-  UserStore   UserStore?           @relation(fields: [userStoreId], references: [id])
-  userStoreId Int?
-
-  @@index([storeId])
-  @@map("notifications")
-  @@index([userStoreId])
 }

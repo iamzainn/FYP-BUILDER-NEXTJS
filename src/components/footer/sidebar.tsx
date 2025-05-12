@@ -1,49 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import AIChat from '../AIChat';
-
-// Define the proper interfaces
-interface FooterColumn {
-  id: string;
-  title: string;
-  links: FooterLink[];
-}
-
-interface FooterLink {
-  id: string;
-  label: string;
-  href: string;
-}
-
-interface SocialLink {
-  id: string;
-  platform: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
-interface FooterStyles {
-  backgroundColor: string;
-  textColor: string;
-  headingColor: string;
-  linkColor: string;
-  linkHoverColor: string;
-  borderColor: string;
-  padding: string;
-  fontFamily: string;
-  useGradient: boolean;
-  gradientFrom: string;
-  gradientTo: string;
-  gradientDirection: string;
-  footerBottom: {
-    backgroundColor: string;
-    textColor: string;
-    useGradient: boolean;
-    gradientFrom: string;
-    gradientTo: string;
-    gradientDirection: string;
-  };
-}
+import { WebsiteConfig, FooterColumn, FooterLink, FooterStyles, SocialLink, FooterConfig } from '@/types/websiteConfig';
 
 interface FooterSidebarProps {
   isEditing: boolean;
@@ -52,11 +9,15 @@ interface FooterSidebarProps {
   socialLinks: SocialLink[];
   footerStyles: FooterStyles;
   handleSave: () => void;
+  handleClose: () => void;
   setFooterColumns?: React.Dispatch<React.SetStateAction<FooterColumn[]>>;
   setSocialLinks?: React.Dispatch<React.SetStateAction<SocialLink[]>>;
   setFooterStyles?: React.Dispatch<React.SetStateAction<FooterStyles>>;
   apiKey?: string;
-  handleAIConfigUpdate?: (newConfig: { footerConfig: { columns: FooterColumn[], styles: FooterStyles, socialLinks: SocialLink[] } }) => void;
+  handleAIConfigUpdate?: (newConfig: WebsiteConfig) => void;
+  useDirectSave?: boolean;
+  componentId?: number;
+  isSaving?: boolean;
 }
 
 // Font families options
@@ -91,11 +52,15 @@ const FooterSidebar: React.FC<FooterSidebarProps> = ({
   socialLinks,
   footerStyles,
   handleSave,
+  handleClose,
   setFooterColumns,
   setSocialLinks,
   setFooterStyles,
   apiKey,
-  handleAIConfigUpdate
+  handleAIConfigUpdate,
+  useDirectSave,
+  componentId,
+  isSaving = false
 }) => {
   // State for active tab
   const [activeTab, setActiveTab] = useState<'global' | 'columns' | 'social' | 'ai'>('global');
@@ -107,132 +72,208 @@ const FooterSidebar: React.FC<FooterSidebarProps> = ({
   
   if (!isEditing) return null;
   
-  // Handler to update footer styles
-  const updateFooterStyle = (key: string, value: string | boolean) => {
-    if (setFooterStyles) {
-      setFooterStyles(prev => ({
-        ...prev,
-        [key]: value
-      }));
-    }
-  };
-  
-  // Handler to update footer bottom styles
-  const updateFooterBottomStyle = (key: string, value: string | boolean) => {
-    if (setFooterStyles) {
-      setFooterStyles(prev => ({
-        ...prev,
-        footerBottom: {
-          ...prev.footerBottom,
-          [key]: value
-        }
-      }));
-    }
-  };
+  useEffect(() => {
+    console.log("FooterSidebar loaded with props:", {
+      columnsCount: footerColumns.length,
+      hasStyles: Object.keys(footerStyles).length > 0,
+      socialLinksCount: socialLinks.length,
+      useDirectSave,
+      componentId
+    });
+  }, []);
 
-  // Handler for AI config updates
+  // Handler for AI config updates - improved with deep cloning
   const handleFooterAIUpdate = (newConfig: any) => {
+    console.log('Received AI config update in sidebar:', JSON.stringify(newConfig, null, 2));
+    
     if (newConfig.footerConfig && handleAIConfigUpdate) {
-      handleAIConfigUpdate(newConfig);
+      // Create deep copies of all data before processing
+      const processedConfig: WebsiteConfig = {
+        footerConfig: newConfig.footerConfig.columns || newConfig.footerConfig.styles || newConfig.footerConfig.socialLinks ? {
+          columns: newConfig.footerConfig.columns ? JSON.parse(JSON.stringify(newConfig.footerConfig.columns)) : [],
+          styles: newConfig.footerConfig.styles ? JSON.parse(JSON.stringify(newConfig.footerConfig.styles)) : footerStyles,
+          socialLinks: newConfig.footerConfig.socialLinks ? JSON.parse(JSON.stringify(newConfig.footerConfig.socialLinks)) : []
+        } : null
+      };
       
+      console.log('Passing processed config to parent handleAIConfigUpdate');
+      handleAIConfigUpdate(processedConfig);
+      
+      // Also update local state if needed
       if (newConfig.footerConfig.columns && setFooterColumns) {
-        setFooterColumns(newConfig.footerConfig.columns);
+        const columnsCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.columns));
+        console.log('Updating local columns state with deep copy:', columnsCopy);
+        setFooterColumns(columnsCopy);
       }
       
       if (newConfig.footerConfig.styles && setFooterStyles) {
-        setFooterStyles(newConfig.footerConfig.styles);
+        const stylesCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.styles));
+        console.log('Updating local styles state with deep copy:', stylesCopy);
+        setFooterStyles(stylesCopy);
       }
       
       if (newConfig.footerConfig.socialLinks && setSocialLinks) {
-        setSocialLinks(newConfig.footerConfig.socialLinks);
+        const socialLinksCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.socialLinks));
+        console.log('Updating local social links state with deep copy:', socialLinksCopy);
+        setSocialLinks(socialLinksCopy);
       }
     }
   };
 
-  // Handler to add a new column
+  // Handler to update footer styles - improved with deep cloning
+  const updateFooterStyle = (key: string, value: string | boolean) => {
+    if (setFooterStyles) {
+      console.log(`Updating footer style ${key} to:`, value);
+      
+      // Create a deep copy of current styles
+      const stylesCopy = JSON.parse(JSON.stringify(footerStyles));
+      
+      // Update the specific style property
+      stylesCopy[key] = value;
+      
+      // Set the updated styles
+      setFooterStyles(stylesCopy);
+    }
+  };
+
+  // Handler to update footer bottom styles - improved with deep cloning
+  const updateFooterBottomStyle = (key: string, value: string | boolean) => {
+    if (setFooterStyles) {
+      console.log(`Updating footer bottom style ${key} to:`, value);
+      
+      // Create a deep copy of current styles
+      const stylesCopy = JSON.parse(JSON.stringify(footerStyles));
+      
+      // Update the specific bottom style property
+      stylesCopy.footerBottom = {
+        ...stylesCopy.footerBottom,
+        [key]: value
+      };
+      
+      // Set the updated styles
+      setFooterStyles(stylesCopy);
+    }
+  };
+
+  // Handler to add a new column - improved with deep cloning
   const addNewColumn = () => {
     if (setFooterColumns && newColumnTitle.trim()) {
+      console.log(`Adding new column: ${newColumnTitle}`);
+      
       const newColumn: FooterColumn = {
         id: `column-${Date.now()}`,
         title: newColumnTitle,
         links: []
       };
       
-      setFooterColumns(prev => [...prev, newColumn]);
+      // Create deep copy of current columns and add the new one
+      const columnsCopy = JSON.parse(JSON.stringify(footerColumns));
+      const updatedColumns = [...columnsCopy, newColumn];
+      
+      setFooterColumns(updatedColumns);
       setNewColumnTitle('');
     }
   };
 
-  // Handler to update column title
+  // Handler to update column title - improved with deep cloning
   const updateColumnTitle = (columnId: string, newTitle: string) => {
     if (setFooterColumns) {
-      setFooterColumns(prev => 
-        prev.map(column => 
-          column.id === columnId ? { ...column, title: newTitle } : column
-        )
+      console.log(`Updating column ${columnId} title to: ${newTitle}`);
+      
+      // Create deep copy of current columns
+      const columnsCopy = JSON.parse(JSON.stringify(footerColumns));
+      
+      // Update the specific column
+      const updatedColumns = columnsCopy.map((column: FooterColumn) => 
+        column.id === columnId ? { ...column, title: newTitle } : column
       );
+      
+      setFooterColumns(updatedColumns);
     }
   };
 
-  // Handler to delete a column
+  // Handler to delete a column - improved with deep cloning
   const deleteColumn = (columnId: string) => {
     if (setFooterColumns) {
-      setFooterColumns(prev => prev.filter(column => column.id !== columnId));
+      console.log(`Deleting column: ${columnId}`);
+      
+      // Create deep copy of current columns and filter out the one to delete
+      const columnsCopy = JSON.parse(JSON.stringify(footerColumns));
+      const updatedColumns = columnsCopy.filter((column: FooterColumn) => column.id !== columnId);
+      
+      setFooterColumns(updatedColumns);
     }
   };
 
-  // Handler to add a new link to a column
+  // Handler to add a new link to a column - improved with deep cloning
   const addNewLink = (columnId: string) => {
     if (setFooterColumns && newLinkLabel.trim()) {
+      console.log(`Adding new link "${newLinkLabel}" to column ${columnId}`);
+      
       const newLink: FooterLink = {
         id: `link-${Date.now()}`,
         label: newLinkLabel,
         href: newLinkHref
       };
       
-      setFooterColumns(prev => 
-        prev.map(column => 
-          column.id === columnId
-            ? { ...column, links: [...column.links, newLink] }
-            : column
-        )
+      // Create deep copy of current columns
+      const columnsCopy = JSON.parse(JSON.stringify(footerColumns));
+      
+      // Update the specific column with the new link
+      const updatedColumns = columnsCopy.map((column: FooterColumn) => 
+        column.id === columnId
+          ? { ...column, links: [...column.links, newLink] }
+          : column
       );
       
+      setFooterColumns(updatedColumns);
       setNewLinkLabel('');
       setNewLinkHref('/');
     }
   };
 
-  // Handler to update a link
+  // Handler to update a link - improved with deep cloning
   const updateLink = (columnId: string, linkId: string, field: 'label' | 'href', value: string) => {
     if (setFooterColumns) {
-      setFooterColumns(prev => 
-        prev.map(column => 
-          column.id === columnId
-            ? {
-                ...column,
-                links: column.links.map(link => 
-                  link.id === linkId
-                    ? { ...link, [field]: value }
-                    : link
-                )
-              }
-            : column
-        )
+      console.log(`Updating link ${linkId} in column ${columnId}, field: ${field}, value: ${value}`);
+      
+      // Create deep copy of current columns
+      const columnsCopy = JSON.parse(JSON.stringify(footerColumns));
+      
+      // Update the specific link in the specific column
+      const updatedColumns = columnsCopy.map((column: FooterColumn) => 
+        column.id === columnId
+          ? {
+              ...column,
+              links: column.links.map((link: FooterLink) => 
+                link.id === linkId
+                  ? { ...link, [field]: value }
+                  : link
+              )
+            }
+          : column
       );
+      
+      setFooterColumns(updatedColumns);
     }
   };
 
-  // Handler to delete a link
+  // Handler to delete a link - improved with deep cloning
   const deleteLink = (columnId: string, linkId: string) => {
     if (setFooterColumns) {
-      setFooterColumns(prev => 
-        prev.map(column => 
-          column.id === columnId
-            ? { ...column, links: column.links.filter(link => link.id !== linkId) }
-            : column
-        )
+      console.log(`Deleting link ${linkId} from column ${columnId}`);
+      
+      // Create deep copy of current columns
+      const columnsCopy = JSON.parse(JSON.stringify(footerColumns));
+      
+      // Update the specific column, removing the specified link
+      const updatedColumns = columnsCopy.map((column: FooterColumn) => 
+        column.id === columnId
+          ? { ...column, links: column.links.filter((link: FooterLink) => link.id !== linkId) }
+          : column
       );
+      
+      setFooterColumns(updatedColumns);
     }
   };
 
@@ -278,17 +319,60 @@ const FooterSidebar: React.FC<FooterSidebarProps> = ({
         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
           Customize Footer
         </h2>
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
-          aria-label="Save changes"
-          title="Save changes"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-          Save
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              console.log("Footer sidebar close button clicked");
+              handleClose();
+            }}
+            className="p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            aria-label="Close sidebar"
+            title="Close sidebar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <button
+            onClick={() => {
+              console.log("Save button clicked");
+              console.log("Direct save mode:", useDirectSave ? "enabled" : "disabled");
+              console.log("Component ID:", componentId);
+              
+              try {
+                handleSave();
+                console.log("Save action completed successfully");
+              } catch (error) {
+                console.error("Error during save operation:", error);
+              }
+            }}
+            disabled={isSaving}
+            className={`px-4 py-2 rounded-lg text-white transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${
+              isSaving
+                ? 'bg-gray-600 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+            }`}
+            aria-label={isSaving ? "Saving changes..." : "Save changes"}
+            title={isSaving ? "Saving changes..." : "Save changes"}
+          >
+            {isSaving ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Save
+              </>
+            )}
+          </button>
+        </div>
       </div>
       
       {/* Tab Navigation */}
@@ -1059,22 +1143,28 @@ const FooterSidebar: React.FC<FooterSidebarProps> = ({
             </div>
             
             {/* AI Chat Component */}
-            <AIChat 
-              apiKey={apiKey}
-              /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
-              currentConfig={{
-                footerConfig: {
-                  columns: footerColumns,
-                  styles: footerStyles,
-                  socialLinks: socialLinks
-                }
-              } as any}
-              /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
-              onConfigUpdate={handleFooterAIUpdate as any}
-            />
+           
           </div>
         </div>
       )}
+
+      {/* Mobile optimization: Bottom bar with save button for small screens */}
+      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-gray-900 p-4 border-t border-gray-700 flex justify-between z-[10000]">
+        <button
+          onClick={() => {
+            console.log("Mobile footer sidebar close button clicked");
+            handleClose();
+          }}
+          className="px-4 py-3 bg-gray-700 text-white rounded-lg flex items-center justify-center gap-2 shadow-lg"
+          aria-label="Close editor"
+          title="Close editor"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Close
+        </button>
+      </div>
     </div>
   );
 };
