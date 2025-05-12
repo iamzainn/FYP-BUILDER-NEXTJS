@@ -9,6 +9,7 @@ export default function Collection({
   isAdmin = false,
   isEditing = false,
   onStartEdit,
+  onCloseSidebar,
   onSave,
   savedItems = null,
   savedStyles = null,
@@ -285,26 +286,9 @@ export default function Collection({
           updateAllItemsStyle={updateAllItemsStyle}
           apiKey={apiKey}
           handleAIConfigUpdate={handleAIConfigUpdate}
-          onItemsChange={items => {
-            // Create a deep copy to prevent reference issues
-            const itemsCopy = JSON.parse(JSON.stringify(items));
-            setCollectionItems(itemsCopy);
-            
-            // Notify parent component if callback exists
-            if (onItemsChange) {
-              onItemsChange(itemsCopy);
-            }
-          }}
-          onStylesChange={styles => {
-            // Create a deep copy to prevent reference issues
-            const stylesCopy = JSON.parse(JSON.stringify(styles));
-            setCollectionStyles(stylesCopy);
-            
-            // Notify parent component if callback exists
-            if (onStylesChange) {
-              onStylesChange(stylesCopy);
-            }
-          }}
+          onItemsChange={onItemsChange}
+          onStylesChange={onStylesChange}
+          onCloseSidebar={onCloseSidebar}
         />
       )}
     </>

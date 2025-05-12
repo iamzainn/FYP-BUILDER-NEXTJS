@@ -74,11 +74,13 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       try {
+
         // Just return the file URL to the client
         return { uploadedBy: metadata.userId, fileUrl: file.ufsUrl };
       } catch (error) {
         console.error("Error in onUploadComplete:", error);
         return { uploadedBy: metadata.userId, fileUrl: file.ufsUrl, error: "Error processing upload" };
+
       }
     }),
 } satisfies FileRouter;

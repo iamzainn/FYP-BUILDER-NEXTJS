@@ -107,6 +107,7 @@ export interface SidebarProductsProps {
   handleAIConfigUpdate: (newConfig: WebsiteConfig) => void;
   onItemsChange?: (items: ProductItem[]) => void;
   onStylesChange?: (styles: ProductStyles) => void;
+  onCloseSidebar?: () => void;
 }
 
 export interface ProductsMainProps {

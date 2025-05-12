@@ -19,7 +19,8 @@ const SidebarProducts: React.FC<SidebarProductsProps> = ({
   apiKey,
   handleAIConfigUpdate,
   onItemsChange,
-  onStylesChange
+  onStylesChange,
+  onCloseSidebar
 }) => {
   const [activeTab, setActiveTab] = useState<'global' | 'individual'>('global');
   const [backgroundType, setBackgroundType] = useState<'color' | 'gradient'>(
@@ -717,12 +718,26 @@ const SidebarProducts: React.FC<SidebarProductsProps> = ({
           <div className="p-4 bg-gray-800 sticky top-0 z-10">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold">Products Editor</h2>
-              <button
-                onClick={handleSave}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors"
-              >
-                Save
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSave}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors"
+                >
+                  Save
+                </button>
+                {onCloseSidebar && (
+                  <button
+                    onClick={onCloseSidebar}
+                    className="bg-gray-700 hover:bg-gray-600 text-white p-1 rounded-md transition-colors"
+                    title="Close editor"
+                    aria-label="Close editor"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="flex mt-4 border-b border-gray-700">

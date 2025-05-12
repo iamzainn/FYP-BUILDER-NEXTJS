@@ -10,6 +10,7 @@ export default function Products({
   isAdmin = false,
   isEditing = false,
   onStartEdit,
+  onCloseSidebar,
   onSave,
   savedItems = null,
   savedStyles = null,
@@ -355,6 +356,7 @@ export default function Products({
           const stylesCopy = JSON.parse(JSON.stringify(styles));
           setProductStyles(stylesCopy);
         }}
+        onCloseSidebar={onCloseSidebar}
       />
     </>
   );
