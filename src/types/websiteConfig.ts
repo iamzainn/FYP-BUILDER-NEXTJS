@@ -45,6 +45,7 @@ export interface NavbarStyles {
   padding: string;
   fontFamily: string;
   color: string;
+  boxShadow: string;
 }
 
 export interface NavbarConfig {
@@ -246,6 +247,54 @@ export interface ProductStyles {
   sectionTitle: SectionTitle;
 }
 
+export interface FooterColumn {
+  id: string;
+  title: string;
+  links: FooterLink[];
+}
+
+export interface FooterLink {
+  id: string;
+  label: string;
+  href: string;
+}
+
+export interface SocialLink {
+  id: string;
+  platform: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+export interface FooterStyles {
+  backgroundColor: string;
+  textColor: string;
+  headingColor: string;
+  linkColor: string;
+  linkHoverColor: string;
+  borderColor: string;
+  padding: string;
+  fontFamily: string;
+  useGradient: boolean;
+  gradientFrom: string;
+  gradientTo: string;
+  gradientDirection: string;
+  footerBottom: {
+    backgroundColor: string;
+    textColor: string;
+    useGradient: boolean;
+    gradientFrom: string;
+    gradientTo: string;
+    gradientDirection: string;
+  };
+}
+
+export interface FooterConfig {
+  columns: FooterColumn[];
+  styles: FooterStyles;
+  socialLinks: SocialLink[];
+}
+
 export interface WebsiteConfig {
   navbarConfig?: NavbarConfig | null;
   heroConfig?: HeroConfig | null;
@@ -254,4 +303,5 @@ export interface WebsiteConfig {
     items: ProductItem[];
     styles: ProductStyles;
   } | null;
+  footerConfig?: FooterConfig | null;
 } 

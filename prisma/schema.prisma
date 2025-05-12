@@ -25,20 +25,21 @@ model User {
 }
 
 model UserStore {
-  id           Int               @id @default(autoincrement())
-  userId       Int               @map("user_id")
-  storeName    String            @map("store_name") @db.VarChar(255)
-  storeId      String            @map("store_id") @db.VarChar(255)
-  subdomain    String            @unique @db.VarChar(255)
-  createdAt    DateTime?         @default(now()) @map("created_at") @db.DateTime(0)
-  updatedAt    DateTime?         @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  id           Int             @id @default(autoincrement())
+  userId       Int             @map("user_id")
+  storeName    String          @map("store_name") @db.VarChar(255)
+  storeId      String          @map("store_id") @db.VarChar(255)
+  subdomain    String          @unique @db.VarChar(255)
+  createdAt    DateTime?       @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime?       @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
   store_config Json?
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   products     Product[]
   categories   Category[]
   customers    StoreCustomer[]
   orders       Order[]
   coupons      Coupon[]
+  pages        Page[]
 
   @@unique([userId, storeName], map: "user_id")
   @@index([userId], map: "idx_user_id")
@@ -58,20 +59,20 @@ model Category {
 }
 
 model Product {
-  id         Int           @id @default(autoincrement())
-  name       String        @db.VarChar(255)
-  description String?      @db.Text
-  price      Float         
-  stockLevel Int           @default(0) @map("stock_level")
-  isActive   Boolean       @default(true) @map("is_active")
-  storeId    Int           @map("store_id")
-  categoryId Int?          @map("category_id")
-  createdAt  DateTime?     @default(now()) @map("created_at") @db.DateTime(0)
-  updatedAt  DateTime?     @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
-  store      UserStore     @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  category   Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images     ProductImage[]
-  orderItems OrderItem[]
+  id          Int            @id @default(autoincrement())
+  name        String         @db.VarChar(255)
+  description String?        @db.Text
+  price       Float
+  stockLevel  Int            @default(0) @map("stock_level")
+  isActive    Boolean        @default(true) @map("is_active")
+  storeId     Int            @map("store_id")
+  categoryId  Int?           @map("category_id")
+  createdAt   DateTime?      @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime?      @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  store       UserStore      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images      ProductImage[]
+  orderItems  OrderItem[]
 
   @@index([storeId], map: "idx_product_store_id")
   @@index([categoryId], map: "idx_product_category_id")
@@ -107,23 +108,23 @@ model StoreCustomer {
 }
 
 model Order {
-  id           Int           @id @default(autoincrement())
-  orderNumber  String        @unique @map("order_number") @db.VarChar(50)
-  storeId      Int           @map("store_id")
-  customerId   Int           @map("customer_id") 
-  status       OrderStatus   @default(PENDING)
-  total        Float        
-  address      String?       @db.Text
-  paymentMethod PaymentMethod @default(CREDIT_CARD) @map("payment_method")
-  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
-  couponId     Int?          @map("coupon_id")
-  discountAmount Float?      @default(0) @map("discount_amount")
-  createdAt    DateTime?     @default(now()) @map("created_at") @db.DateTime(0)
-  updatedAt    DateTime?     @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
-  store        UserStore     @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  customer     StoreCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  coupon       Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  orderItems   OrderItem[]
+  id             Int           @id @default(autoincrement())
+  orderNumber    String        @unique @map("order_number") @db.VarChar(50)
+  storeId        Int           @map("store_id")
+  customerId     Int           @map("customer_id")
+  status         OrderStatus   @default(PENDING)
+  total          Float
+  address        String?       @db.Text
+  paymentMethod  PaymentMethod @default(CREDIT_CARD) @map("payment_method")
+  paymentStatus  PaymentStatus @default(PENDING) @map("payment_status")
+  couponId       Int?          @map("coupon_id")
+  discountAmount Float?        @default(0) @map("discount_amount")
+  createdAt      DateTime?     @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt      DateTime?     @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  store          UserStore     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customer       StoreCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  coupon         Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  orderItems     OrderItem[]
 
   @@index([storeId], map: "idx_order_store_id")
   @@index([customerId], map: "idx_order_customer_id")
@@ -132,13 +133,13 @@ model Order {
 }
 
 model OrderItem {
-  id          Int       @id @default(autoincrement())
-  orderId     Int       @map("order_id")
-  productId   Int       @map("product_id")
-  quantity    Int
-  price       Float     
-  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id        Int     @id @default(autoincrement())
+  orderId   Int     @map("order_id")
+  productId Int     @map("product_id")
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([orderId], map: "idx_order_item_order_id")
   @@index([productId], map: "idx_order_item_product_id")
@@ -146,25 +147,57 @@ model OrderItem {
 }
 
 model Coupon {
-  id              Int         @id @default(autoincrement())
-  code            String      @db.VarChar(50)
-  storeId         Int         @map("store_id")
-  discountType    DiscountType @default(PERCENTAGE) @map("discount_type")
-  discountValue   Float       @map("discount_value")
-  minPurchase     Float?      @map("min_purchase")
-  startDate       DateTime    @map("start_date") @db.DateTime(0)
-  endDate         DateTime    @map("end_date") @db.DateTime(0)
-  isActive        Boolean     @default(true) @map("is_active")
-  usageLimit      Int?        @map("usage_limit")
-  usageCount      Int         @default(0) @map("usage_count")
-  createdAt       DateTime?   @default(now()) @map("created_at") @db.DateTime(0)
-  updatedAt       DateTime?   @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
-  store           UserStore   @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  orders          Order[]
+  id            Int          @id @default(autoincrement())
+  code          String       @db.VarChar(50)
+  storeId       Int          @map("store_id")
+  discountType  DiscountType @default(PERCENTAGE) @map("discount_type")
+  discountValue Float        @map("discount_value")
+  minPurchase   Float?       @map("min_purchase")
+  startDate     DateTime     @map("start_date") @db.DateTime(0)
+  endDate       DateTime     @map("end_date") @db.DateTime(0)
+  isActive      Boolean      @default(true) @map("is_active")
+  usageLimit    Int?         @map("usage_limit")
+  usageCount    Int          @default(0) @map("usage_count")
+  createdAt     DateTime?    @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime?    @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  store         UserStore    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  orders        Order[]
 
   @@unique([storeId, code], map: "store_coupon_code")
   @@index([storeId], map: "idx_coupon_store_id")
   @@map("coupons")
+}
+
+model Page {
+  id          Int             @id @default(autoincrement())
+  storeId     Int             @map("store_id")
+  title       String          @db.VarChar(255)
+  slug        String          @db.VarChar(255)
+  isPublished Boolean         @default(false) @map("is_published")
+  pageType    PageType        @default(CUSTOM) @map("page_type")
+  pageOrder   Int             @default(0) @map("page_order")
+  createdAt   DateTime?       @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime?       @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  store       UserStore       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  components  PageComponent[]
+
+  @@unique([storeId, slug])
+  @@index([storeId], map: "idx_page_store_id")
+  @@map("pages")
+}
+
+model PageComponent {
+  id            Int       @id @default(autoincrement())
+  pageId        Int       @map("page_id")
+  componentType String    @map("component_type") @db.VarChar(50)
+  content       Json
+  order         Int       @default(0)
+  createdAt     DateTime? @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime? @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  page          Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId], map: "idx_page_component_page_id")
+  @@map("page_components")
 }
 
 enum OrderStatus {
@@ -184,11 +217,7 @@ enum PaymentStatus {
 
 enum PaymentMethod {
   CREDIT_CARD
-  
-  
   CASH_ON_DELIVERY
- 
-  
 }
 
 enum DiscountType {
@@ -196,47 +225,11 @@ enum DiscountType {
   FIXED_AMOUNT
 }
 
-
-
-//future features:
-
-// model Page {
-//   id           Int       @id @default(autoincrement())
-//   storeId      Int       @map("store_id")
-//   title        String    @db.VarChar(255) 
-//   slug         String    @db.VarChar(255)
-//   isPublished  Boolean   @default(false) @map("is_published")
-//   pageType     PageType  @default(CUSTOM) @map("page_type")
-//   pageOrder    Int       @default(0) @map("page_order") 
-//   createdAt    DateTime? @default(now()) @map("created_at") @db.DateTime(0)
-//   updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
-//   store        UserStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
-//   components   PageComponent[]
-
-//   @@unique([storeId, slug])
-//   @@index([storeId], map: "idx_page_store_id")
-//   @@map("pages")
-// }
-
-// model PageComponent {
-//   id           Int       @id @default(autoincrement())
-//   pageId       Int       @map("page_id") 
-//   componentType String   @map("component_type") @db.VarChar(50)
-//   content      Json      
-//   order        Int       @default(0)
-//   createdAt    DateTime? @default(now()) @map("created_at") @db.DateTime(0)
-//   updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
-//   page         Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
-
-//   @@index([pageId], map: "idx_page_component_page_id")
-//   @@map("page_components")
-// }
-
-// enum PageType {
-//   HOME
-//   PRODUCTS
-//   ABOUT
-//   CONTACT
-//   CHECKOUT
-//   CUSTOM
-// }
+enum PageType {
+  HOME
+  PRODUCTS
+  ABOUT
+  CONTACT
+  CHECKOUT
+  CUSTOM
+}

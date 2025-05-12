@@ -29,29 +29,42 @@ export default function AIChat({ apiKey, currentConfig, onConfigUpdate }: AIChat
 
     setIsLoading(true);
     try {
+      console.log('Processing AI request:', inputMessage.trim());
+      console.log('Current config state:', JSON.stringify(currentConfig, null, 2));
+      
       const response = await aiService.current.processUserRequest(inputMessage.trim(), currentConfig);
+      console.log('AI response received:', JSON.stringify(response, null, 2));
       
       // Create a new config object with only the updated parts
-      const updatedConfig: WebsiteConfig = { ...currentConfig };
+      const updatedConfig: WebsiteConfig = JSON.parse(JSON.stringify(currentConfig));
+      
+      // Track if we made any changes to call the update function
+      let hasChanges = false;
       
       if (response.navbarConfig) {
-        // @ts-expect-error - Type mismatch between NavbarConfig imports with different type constraints
-        updatedConfig.navbarConfig = response.navbarConfig;
+        console.log('Navbar config received from AI, updating...');
+        updatedConfig.navbarConfig = JSON.parse(JSON.stringify(response.navbarConfig));
+        hasChanges = true;
       }
       
       if (response.heroConfig) {
-        // @ts-expect-error - Type mismatch between HeroConfig imports with different type constraints
-        updatedConfig.heroConfig = response.heroConfig;
+        console.log('Hero config received from AI, updating...');
+        updatedConfig.heroConfig = JSON.parse(JSON.stringify(response.heroConfig));
+        hasChanges = true;
       }
       
       if (response.collectionConfig) {
-        // @ts-expect-error - Type mismatch between CollectionConfig imports with different type constraints
-        updatedConfig.collectionConfig = response.collectionConfig;
+        console.log('Collection config received from AI, updating...');
+        updatedConfig.collectionConfig = JSON.parse(JSON.stringify(response.collectionConfig));
+        hasChanges = true;
       }
       
       // Only call onConfigUpdate if we have changes
-      if (response.navbarConfig || response.heroConfig || response.collectionConfig) {
+      if (hasChanges) {
+        console.log('Sending updated config to parent component:', JSON.stringify(updatedConfig, null, 2));
         onConfigUpdate(updatedConfig);
+      } else {
+        console.log('No configuration changes received from AI.');
       }
       
       setInputMessage('');

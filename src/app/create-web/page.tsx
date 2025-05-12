@@ -4,13 +4,12 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { AIService } from '../../services/aiService';
 
-import { MongoDBApiService } from '@/services/mondodbapi';
 import Link from 'next/link';
 import { generateSubdomain } from '@/lib/fn';
+import { UploadButton } from '@/utils/uploadthing';
 
 export default function SetupPage() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     storeName: '',
     storeDescription: '',
@@ -26,82 +25,16 @@ export default function SetupPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    
-    try {
-      // Validate file type
-      const fileType = file.type;
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-      
-      if (!validTypes.includes(fileType)) {
-        throw new Error(`Invalid file type. Please upload ${validTypes.join(', ')}`);
-      }
-      
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        throw new Error(`File is too large. Maximum size is 5MB`);
-      }
-      
-      // Log file details for debugging
-      console.log('Attempting to upload file:', {
-        name: file.name,
-        type: file.type,
-        size: `${(file.size / 1024).toFixed(2)} KB`,
-      });
-      
-      // Upload the file to the server and save in MongoDB
-      const logoUrl = await MongoDBApiService.uploadFile(file, 'logo');
-      
-      if (logoUrl) {
-        setFormData(prev => ({ ...prev, logo: logoUrl }));
-        console.log('Logo uploaded successfully:', logoUrl);
-      } else {
-        // Use placeholder logo instead of throwing error
-        console.log('Using placeholder logo as fallback');
-        setFormData(prev => ({ ...prev, logo: '/placeholder-logo.png' }));
-      }
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      // More detailed error info for debugging
-      if (error instanceof Error) {
-        console.error('Error details:', {
-          message: error.message,
-          stack: error.stack
-        });
-      }
-      
-      // Provide user-friendly error message
-      const errorMessage = 'Failed to upload logo. You can continue with setup and add a logo later.';
-      alert(errorMessage);
-      
-      // Set a placeholder logo to allow the user to continue
-      setFormData(prev => ({ 
-        ...prev, 
-        logo: '/placeholder-logo.png' // Using a placeholder image path
-      }));
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-   // Add this function to your page.tsx file
-   
-
   const handleSubmit = async () => {
     setIsGenerating(true);
     const subdomain = generateSubdomain(formData.storeName);
-    console.log("subdomain created ",subdomain);
+    console.log("subdomain created ", subdomain);
     
     try {
       // Generate hero content using AI
       const aiService = new AIService('AIzaSyCiYjw2tHMyFGVysLOTBztOl2Z9H4l8L3E');
       const heroContent = await aiService.generateHeroContent(formData.storeName, formData.storeDescription);
-      console.log("heroContent created ",heroContent);
+      console.log("heroContent created ", heroContent);
 
       // Save navbar settings
       const navItems = [
@@ -347,7 +280,8 @@ export default function SetupPage() {
         backgroundOverlay: 'rgba(0,0,0,0.4)',
         overlayOpacity: '1'
       };
-      const collectionItems=[
+      
+      const collectionItems = [
         {
           id: 'col1',
           type: 'collection',
@@ -444,10 +378,9 @@ export default function SetupPage() {
             boxShadow: "",
           }
         }
-        // Add more default items here
       ];
     
-      const collectionStyles={
+      const collectionStyles = {
         backgroundColor: "#FFFFFF",
         backgroundType: "gradient",
         gradientStart: "#FFFFFF",
@@ -470,6 +403,7 @@ export default function SetupPage() {
           fontFamily: "",
         }
       };
+      
       // Create default products
       const defaultProducts = [
         {
@@ -818,118 +752,120 @@ export default function SetupPage() {
           textTransform: "none"
         }
       };
-// Default footer columns with links
-const defaultColumns = [
-  {
-    id: 'shop',
-    title: 'Shop',
-    links: [
-      { id: 'shop-1', label: 'All Products', href: '/products' },
-      { id: 'shop-2', label: 'New Arrivals', href: '/products/new' },
-      { id: 'shop-3', label: 'Best Sellers', href: '/products/best-sellers' },
-      { id: 'shop-4', label: 'Sale Items', href: '/products/sale' }
-    ]
-  },
-  {
-    id: 'account',
-    title: 'Account',
-    links: [
-      { id: 'account-1', label: 'My Account', href: '/account' },
-      { id: 'account-2', label: 'Order History', href: '/account/orders' },
-      { id: 'account-3', label: 'Wishlist', href: '/account/wishlist' },
-      { id: 'account-4', label: 'Returns', href: '/account/returns' }
-    ]
-  },
-  {
-    id: 'support',
-    title: 'Support',
-    links: [
-      { id: 'support-1', label: 'Help Center', href: '/help' },
-      { id: 'support-2', label: 'Contact Us', href: '/contact' },
-      { id: 'support-3', label: 'Shipping Info', href: '/shipping' },
-      { id: 'support-4', label: 'Returns & Exchanges', href: '/returns' }
-    ]
-  },
-  {
-    id: 'company',
-    title: 'Company',
-    links: [
-      { id: 'company-1', label: 'About Us', href: '/about' },
-      { id: 'company-2', label: 'Careers', href: '/careers' },
-      { id: 'company-3', label: 'Privacy Policy', href: '/privacy' },
-      { id: 'company-4', label: 'Terms of Service', href: '/terms' }
-    ]
-  }
-];
+      
+      // Default footer columns with links
+      const defaultColumns = [
+        {
+          id: 'shop',
+          title: 'Shop',
+          links: [
+            { id: 'shop-1', label: 'All Products', href: '/products' },
+            { id: 'shop-2', label: 'New Arrivals', href: '/products/new' },
+            { id: 'shop-3', label: 'Best Sellers', href: '/products/best-sellers' },
+            { id: 'shop-4', label: 'Sale Items', href: '/products/sale' }
+          ]
+        },
+        {
+          id: 'account',
+          title: 'Account',
+          links: [
+            { id: 'account-1', label: 'My Account', href: '/account' },
+            { id: 'account-2', label: 'Order History', href: '/account/orders' },
+            { id: 'account-3', label: 'Wishlist', href: '/account/wishlist' },
+            { id: 'account-4', label: 'Returns', href: '/account/returns' }
+          ]
+        },
+        {
+          id: 'support',
+          title: 'Support',
+          links: [
+            { id: 'support-1', label: 'Help Center', href: '/help' },
+            { id: 'support-2', label: 'Contact Us', href: '/contact' },
+            { id: 'support-3', label: 'Shipping Info', href: '/shipping' },
+            { id: 'support-4', label: 'Returns & Exchanges', href: '/returns' }
+          ]
+        },
+        {
+          id: 'company',
+          title: 'Company',
+          links: [
+            { id: 'company-1', label: 'About Us', href: '/about' },
+            { id: 'company-2', label: 'Careers', href: '/careers' },
+            { id: 'company-3', label: 'Privacy Policy', href: '/privacy' },
+            { id: 'company-4', label: 'Terms of Service', href: '/terms' }
+          ]
+        }
+      ];
 
-// Default social links with icons
-const defaultSocialLinks = [
-  {
-    id: 'facebook',
-    platform: 'Facebook',
-    href: 'https://facebook.com',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
-      </svg>
-    )
-  },
-  {
-    id: 'instagram',
-    platform: 'Instagram',
-    href: 'https://instagram.com',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-      </svg>
-    )
-  },
-  {
-    id: 'twitter',
-    platform: 'Twitter',
-    href: 'https://twitter.com',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-      </svg>
-    )
-  },
-  {
-    id: 'youtube',
-    platform: 'YouTube',
-    href: 'https://youtube.com',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
-      </svg>
-    )
-  }
-];
+      // Default social links with icons
+      const defaultSocialLinks = [
+        {
+          id: 'facebook',
+          platform: 'Facebook',
+          href: 'https://facebook.com',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
+            </svg>
+          )
+        },
+        {
+          id: 'instagram',
+          platform: 'Instagram',
+          href: 'https://instagram.com',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+            </svg>
+          )
+        },
+        {
+          id: 'twitter',
+          platform: 'Twitter',
+          href: 'https://twitter.com',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+            </svg>
+          )
+        },
+        {
+          id: 'youtube',
+          platform: 'YouTube',
+          href: 'https://youtube.com',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+            </svg>
+          )
+        }
+      ];
 
-// Default styles for the footer with gradient options
-const defaultStyles = {
-  backgroundColor: '#f9fafb',
-  textColor: '#4b5563',
-  headingColor: '#111827',
-  linkColor: '#4b5563',
-  linkHoverColor: '#1e40af',
-  borderColor: '#e5e7eb',
-  padding: '3rem 1.5rem',
-  fontFamily: 'Inter, sans-serif',
-  // Add gradient properties
-  useGradient: false,
-  gradientFrom: '#f9fafb',
-  gradientTo: '#e5e7eb',
-  gradientDirection: 'to bottom',
-  footerBottom: {
-    backgroundColor: '#f3f4f6',
-    textColor: '#6b7280',
-    useGradient: false,
-    gradientFrom: '#f3f4f6',
-    gradientTo: '#e5e7eb',
-    gradientDirection: 'to bottom'
-  }
-};
+      // Default styles for the footer with gradient options
+      const defaultStyles = {
+        backgroundColor: '#f9fafb',
+        textColor: '#4b5563',
+        headingColor: '#111827',
+        linkColor: '#4b5563',
+        linkHoverColor: '#1e40af',
+        borderColor: '#e5e7eb',
+        padding: '3rem 1.5rem',
+        fontFamily: 'Inter, sans-serif',
+        // Add gradient properties
+        useGradient: false,
+        gradientFrom: '#f9fafb',
+        gradientTo: '#e5e7eb',
+        gradientDirection: 'to bottom',
+        footerBottom: {
+          backgroundColor: '#f3f4f6',
+          textColor: '#6b7280',
+          useGradient: false,
+          gradientFrom: '#f3f4f6',
+          gradientTo: '#e5e7eb',
+          gradientDirection: 'to bottom'
+        }
+      };
+      
       // Create the complete website configuration
       const websiteConfig = {
         storeName: formData.storeName,
@@ -953,18 +889,14 @@ const defaultStyles = {
         setupComplete: true
       };
 
-     
-
-      ;
-
       const data = {
         storeName: formData.storeName,
         subdomain: subdomain,
         storeConfig: websiteConfig
       }
-      console.log("data created in create-web ",data);
+      console.log("data created in create-web ", data);
 
-      // Create the website in MongoDB
+      // Create the website with Prisma instead of MongoDB
       const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://ai-website-builder-ashen.vercel.app/'}/api/websites`, {
         method: "POST",
         headers: {
@@ -978,12 +910,8 @@ const defaultStyles = {
         throw new Error(errorData.message || "Failed to create website");
       }
 
-      if (!response) {
-        throw new Error('Failed to create website in database');
-      }
-
-      console.log('Website created in database:', response);
-
+      const responseData = await response.json();
+      console.log('Website created in database:', responseData);
       
       router.push(`/home/${formData.storeName}`);
     } catch (error) {
@@ -1078,24 +1006,20 @@ const defaultStyles = {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Store Logo
                 </label>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  title="Choose logo file"
-                  aria-label="Store logo upload"
+                <UploadButton
+                  endpoint="imageUploader"
+                  onClientUploadComplete={(res) => {
+                    if (res && res[0]?.url) {
+                      setFormData(prev => ({ ...prev, logo: res[0].url }));
+                    }
+                  }}
+                  onUploadError={(error) => {
+                    alert('Failed to upload logo: ' + error.message);
+                  }}
+                  appearance={{
+                    button: 'w-full px-4 py-2.5 bg-blue-50 text-black-800 rounded-md hover:bg-gray-100 border border-gray-300 flex items-center justify-center gap-2 transition-colors duration-200',
+                  }}
                 />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-4 py-2.5 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 border border-gray-300 flex items-center justify-center gap-2 transition-colors duration-200"
-                >
-                  <svg className="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  {isUploading ? 'Uploading...' : 'Choose Logo'}
-                </button>
                 {formData.logo && (
                   <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200 flex justify-center">
                     <div className="relative h-24 w-24">

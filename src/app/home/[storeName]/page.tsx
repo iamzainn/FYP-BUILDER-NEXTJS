@@ -59,6 +59,7 @@ export default function Home() {
         let websiteConfig;
         if (storeName) {
           websiteConfig = await MongoDBApiService.getWebsiteConfigByStoreName(storeName);
+          // console.log('websiteConfig', websiteConfig);
         } else {
           // Fallback to default endpoint if no store name
           websiteConfig = await MongoDBApiService.getWebsiteConfig();
@@ -106,23 +107,23 @@ export default function Home() {
         setErrorMessage('Error loading website. Please try again later.');
         
         // Fall back to localStorage if API fails
-        const savedNavItems = localStorage.getItem('navItems');
-        const savedNavStyles = localStorage.getItem('navStyles');
-        const savedHeroItems = localStorage.getItem('heroItems');
-        const savedHeroStyles = localStorage.getItem('heroStyles');
-        const savedCollectionItems = localStorage.getItem('collectionItems');
-        const savedCollectionStyles = localStorage.getItem('collectionStyles');
-        const savedProductItems = localStorage.getItem('productItems');
-        const savedProductStyles = localStorage.getItem('productStyles');
+        // const savedNavItems = localStorage.getItem('navItems');
+        // const savedNavStyles = localStorage.getItem('navStyles');
+        // const savedHeroItems = localStorage.getItem('heroItems');
+        // const savedHeroStyles = localStorage.getItem('heroStyles');
+        // const savedCollectionItems = localStorage.getItem('collectionItems');
+        // const savedCollectionStyles = localStorage.getItem('collectionStyles');
+        // const savedProductItems = localStorage.getItem('productItems');
+        // const savedProductStyles = localStorage.getItem('productStyles');
         
-        if (savedNavItems) setNavItems(JSON.parse(savedNavItems));
-        if (savedNavStyles) setNavStyles(JSON.parse(savedNavStyles));
-        if (savedHeroItems) setHeroItems(JSON.parse(savedHeroItems));
-        if (savedHeroStyles) setHeroStyles(JSON.parse(savedHeroStyles));
-        if (savedCollectionItems) setCollectionItems(JSON.parse(savedCollectionItems));
-        if (savedCollectionStyles) setCollectionStyles(JSON.parse(savedCollectionStyles));
-        if (savedProductItems) setProductItems(JSON.parse(savedProductItems));
-        if (savedProductStyles) setProductStyles(JSON.parse(savedProductStyles));
+        // if (savedNavItems) setNavItems(JSON.parse(savedNavItems));
+        // if (savedNavStyles) setNavStyles(JSON.parse(savedNavStyles));
+        // if (savedHeroItems) setHeroItems(JSON.parse(savedHeroItems));
+        // if (savedHeroStyles) setHeroStyles(JSON.parse(savedHeroStyles));
+        // if (savedCollectionItems) setCollectionItems(JSON.parse(savedCollectionItems));
+        // if (savedCollectionStyles) setCollectionStyles(JSON.parse(savedCollectionStyles));
+        // if (savedProductItems) setProductItems(JSON.parse(savedProductItems));
+        // if (savedProductStyles) setProductStyles(JSON.parse(savedProductStyles));
       } finally {
         setIsLoading(false);
       }

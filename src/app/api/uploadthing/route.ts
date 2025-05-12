@@ -7,12 +7,7 @@ const baseUrl = process.env.NODE_ENV === 'production'
   ? process.env.VERCEL_URL
   : "http://localhost:3000";
 
-// Export routes for Next App Router
+// Export routes for Next.js App Router
 export const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
-  config: {
-    callbackUrl: `${baseUrl}/api/uploadthing`,
-    // Use uploadthing token if provided
-    token: process.env.UPLOADTHING_TOKEN
-  },
 });
