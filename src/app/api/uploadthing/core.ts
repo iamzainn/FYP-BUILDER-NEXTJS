@@ -83,6 +83,60 @@ export const ourFileRouter = {
 
       }
     }),
+
+  mediaLibraryUploader: f({
+    image: {
+      maxFileSize: "4MB",
+      maxFileCount: 3,
+    },
+    // Add support for other file types later
+    // video: {
+    //   maxFileSize: "16MB",
+    //   maxFileCount: 1,
+    // },
+    // pdf: {
+    //   maxFileSize: "4MB",
+    //   maxFileCount: 1,
+    // },
+  })
+    .middleware(async ({}) => {
+      try {
+        // Authenticate user
+        const { userId: clerkUserId } = await auth();
+        
+        if (!clerkUserId) {
+          throw new UploadThingError("Unauthorized - No user ID");
+        }
+        
+        const user = await getUserDbId(clerkUserId);
+        if (!user) {
+          throw new UploadThingError("Unauthorized - User not found in database");
+        }
+        
+        return { userId: user.id };
+      } catch (error) {
+        console.error("Error in UploadThing middleware:", error);
+        throw new UploadThingError("Server error during authorization");
+      }
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      try {
+        // Return both the file URL and the fileKey for deletion later
+        return { 
+          uploadedBy: metadata.userId, 
+          fileUrl: file.ufsUrl,
+          fileKey: file.key 
+        };
+      } catch (error) {
+        console.error("Error in onUploadComplete:", error);
+        return { 
+          uploadedBy: metadata.userId, 
+          fileUrl: file.ufsUrl,
+          fileKey: file.key,
+          error: "Error processing upload" 
+        };
+      }
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
