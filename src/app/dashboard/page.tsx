@@ -1,160 +1,137 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { auth } from '@clerk/nextjs/server';
 import { Header } from '@/components/layout';
-
-
 import { getUserDbId, getUserStore } from '@/lib/fn';
-
-
-
+import { Globe, Layout, Layers, Plus, Edit3, Settings, ExternalLink } from 'lucide-react';
 
 export default async function DashboardPage() {
-  const { userId: clerkUserId }  = await auth();
+  const { userId: clerkUserId } = await auth();
   const userDbId = await getUserDbId(clerkUserId!);
   const userStore = await getUserStore(userDbId!.id);
-  if (!userDbId) {
-    console.log("No user found in database, redirecting to sign-in");
-    redirect('/sign-in');
-  }
   
-  
-  
-
-  
- 
- 
-  
-
-
-  
-  
- 
-  
-
-  
-  
-
-  
-
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-blue-50 to-white relative">
-    <Header />
-      <div className="absolute top-40 left-20 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob"></div>
-      <div className="absolute top-60 right-20 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-40 left-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob animation-delay-4000"></div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-indigo-50/50 to-purple-50/50">
+      <Header />
       
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div className="mb-6 sm:mb-0">
-            <h1 className="text-3xl font-bold text-gray-900">My Websites</h1>
-            <p className="mt-1 text-gray-500">Manage and edit your websites</p>
-          </div>
-          <Link
-            href="/create-web"
-            className="inline-flex items-center px-5 py-3 border border-transparent rounded-md shadow-md text-sm font-medium text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:-translate-y-0.5"
-          >
-            <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Create New Website
-          </Link>
-        </div>
-
-        
-        <div className="mt-10">
-          {userStore.length === 0 ? (
-            <div className="bg-white shadow-xl overflow-hidden rounded-xl p-10 text-center border border-gray-100 backdrop-blur-sm bg-opacity-80 animate-fadeIn transform transition-all duration-500 hover:shadow-2xl">
-              <div className="w-20 h-20 mx-auto rounded-full bg-indigo-50 flex items-center justify-center">
-                <svg className="h-10 w-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+      <div className="container mx-auto px-4 pt-6 pb-16">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar */}
+          <div className="w-full md:w-64 flex-shrink-0">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-4 border-b border-gray-100">
+                <h2 className="font-semibold text-gray-800">Dashboard</h2>
               </div>
-              <h3 className="mt-4 text-xl font-bold text-gray-900">No websites yet</h3>
-              <p className="mt-2 text-gray-500 max-w-md mx-auto">Let&apos;s create your first website with our intuitive builder. Get started in just a few minutes!</p>
-              <div className="mt-8">
-                <Link
-                  href="/create-web"
-                  className="inline-flex items-center px-5 py-3 border border-transparent rounded-md shadow-md text-sm font-medium text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:-translate-y-0.5"
-                >
-                  <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                  </svg>
-                  Create Your First Website
+              <div className="p-2">
+                <nav className="space-y-1">
+                  <Link href="/dashboard" className="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600">
+                    <Globe className="mr-3 h-5 w-5 text-white opacity-80" />
+                    My Websites
+                  </Link>
+                  <Link href="/templates" className="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                    <Layout className="mr-3 h-5 w-5 text-gray-400" />
+                    Templates
+                  </Link>
+                </nav>
+              </div>
+            </div>
+            
+            <div className="mt-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-md overflow-hidden">
+              <div className="p-6 text-white">
+                <Layers className="h-10 w-10 mb-3 text-white opacity-90" />
+                <h3 className="text-lg font-semibold mb-1">Need help?</h3>
+                <p className="text-sm text-white/80 mb-4">Get started with our helpful guides and tutorials.</p>
+                <Link href="/help" className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md bg-white/20 hover:bg-white/30 text-white transition">
+                  View Resources
                 </Link>
               </div>
             </div>
-          ) : (
-            <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {userStore.map((website) => (
-                <div
-                  key={website.id}
-                  className="bg-white overflow-hidden shadow-xl rounded-xl border border-gray-100 backdrop-blur-sm bg-opacity-80 transform transition-all duration-300 hover:shadow-2xl hover:scale-105"
-                >
-                  <div className="h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-t-xl"></div>
-                  <div className="p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <svg className="h-7 w-7 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-xl font-bold text-gray-900 truncate">{website.storeName}</h3>
-                        <div className="mt-1 flex items-center text-sm text-gray-500">
-                          <svg className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                          </svg>
-                         
+          </div>
+          
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">My Websites</h1>
+                <p className="text-gray-500 text-sm mt-1">Manage and edit your websites</p>
+              </div>
+              <Link
+                href="/create-web"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:-translate-y-0.5"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Website
+              </Link>
+            </div>
+            
+            {userStore.length === 0 ? (
+              <div className="bg-white shadow-sm overflow-hidden rounded-xl p-8 text-center border border-gray-100 backdrop-blur-sm bg-opacity-90">
+                <div className="w-16 h-16 mx-auto rounded-full bg-indigo-50 flex items-center justify-center">
+                  <Globe className="h-8 w-8 text-indigo-500" />
+                </div>
+                <h3 className="mt-4 text-xl font-bold text-gray-900">No websites yet</h3>
+                <p className="mt-2 text-gray-500 max-w-md mx-auto text-sm">Let&apos;s create your first website with our intuitive builder. Get started in just a few minutes!</p>
+                <div className="mt-6">
+                  <Link
+                    href="/create-web"
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Your First Website
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {userStore.map((website) => (
+                  <div
+                    key={website.id}
+                    className="group bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                    <div className="p-5">
+                      <div className="flex items-center mb-4">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center">
+                          <Globe className="h-5 w-5 text-indigo-600" />
+                        </div>
+                        <div className="ml-3">
+                          <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">{website.storeName}</h3>
+                          <p className="text-xs text-gray-500 mt-0.5">Created on {new Date().toLocaleDateString()}</p>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="mt-6 flex justify-between items-center border-t border-gray-100 pt-4">
-                      <Link
-                        href={`/edit/${website.storeName}`}
-                        className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200 group"
-                      >
-                        <svg className="mr-2 h-5 w-5 transform group-hover:-translate-y-0.5 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                          <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
-                        </svg>
-                        <span>Builder</span>
-                      </Link>
                       
-                      <Link
-                        href={`/admin/${website.storeId}`}
-                        className="flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200 group"
-                      >
-                        <svg className="mr-2 h-5 w-5 transform group-hover:-translate-y-0.5 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clipRule="evenodd" />
-                        </svg>
-                        <span>Admin</span>
-                      </Link>
-                      
-                      <Link
-                        href={`/home/${website.storeName}`}
-                        className="flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200 group"
-                      >
-                        <svg className="mr-2 h-5 w-5 transform group-hover:-translate-y-0.5 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                        </svg>
-                        <span>Preview</span>
-                      </Link>
+                      <div className="grid grid-cols-3 gap-2 mt-4">
+                        <Link
+                          href={`/edit/${website.storeName}`}
+                          className="flex flex-col items-center p-3 rounded-lg bg-gray-50 hover:bg-indigo-50 transition-colors text-gray-700 hover:text-indigo-700"
+                        >
+                          <Edit3 className="h-5 w-5 mb-1" />
+                          <span className="text-xs font-medium">Builder</span>
+                        </Link>
+                        
+                        <Link
+                          href={`/admin/${website.storeId}`}
+                          className="flex flex-col items-center p-3 rounded-lg bg-gray-50 hover:bg-indigo-50 transition-colors text-gray-700 hover:text-indigo-700"
+                        >
+                          <Settings className="h-5 w-5 mb-1" />
+                          <span className="text-xs font-medium">Admin</span>
+                        </Link>
+                        
+                        <Link
+                          href={`/home/${website.storeName}`}
+                          className="flex flex-col items-center p-3 rounded-lg bg-gray-50 hover:bg-indigo-50 transition-colors text-gray-700 hover:text-indigo-700"
+                        >
+                          <ExternalLink className="h-5 w-5 mb-1" />
+                          <span className="text-xs font-medium">Preview</span>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </main>
-      
-      {/* Add animation keyframes */}
-      
+      </div>
     </div>
   );
 }

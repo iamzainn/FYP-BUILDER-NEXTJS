@@ -48,7 +48,7 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
           <div className="absolute top-4 right-4 z-50">
             <NotificationListener storeId={storeId} />
           </div>
-          <main className="p-6 md:px-8 h-full">
+          <main className="p-6 pt-14 md:p-8 md:pt-16 h-full max-w-7xl mx-auto">
             {children}
           </main>
         </div>
