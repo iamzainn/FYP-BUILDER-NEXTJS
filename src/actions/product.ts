@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 import { deleteUploadthingImage } from "./uploadthing";
 
 // Notification server URL
-const NOTIFICATION_SERVER_URL = process.env.NOTIFICATION_SERVER_URL || "http://localhost:3001";
+const NOTIFICATION_SERVER_URL = process.env.NOTIFICATION_SERVER_URL!;
 
 export async function createProduct(formData: FormData) {
   const { userId: clerkId } = await auth();
