@@ -79,8 +79,12 @@ export interface WebsiteConfig {
   heroConfig?: {
     items: HeroItem[];
     styles: HeroStyles;
-  };
-  [key: string]: any;
+  } | null;
+
+  navbarConfig?: any;
+  collectionConfig?: any;
+  productConfig?: any;
+  footerConfig?: any;
 }
 
 export interface SortableItemProps {

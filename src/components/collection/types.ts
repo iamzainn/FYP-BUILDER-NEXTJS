@@ -64,20 +64,22 @@ export interface CollectionProps {
   isAdmin?: boolean;
   isEditing?: boolean;
   onStartEdit?: () => void;
+  onCloseSidebar?: () => void;
   onSave?: () => void;
   savedItems?: CollectionItem[] | null;
   savedStyles?: CollectionStyles | null;
   apiKey?: string;
   onItemsChange?: (items: CollectionItem[]) => void;
   onStylesChange?: (styles: CollectionStyles) => void;
-  onAIConfigUpdate?: (newConfig: WebsiteConfig) => void;
+  onAIConfigUpdate?: (config: WebsiteConfig) => void;
+  componentId?: number;
 }
 
 export interface WebsiteConfig extends BaseWebsiteConfig {
   collectionConfig?: {
     items: CollectionItem[];
     styles: CollectionStyles;
-  };
+  } | null;
 }
 
 export interface SortableCollectionItemProps {

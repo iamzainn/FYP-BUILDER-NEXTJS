@@ -44,7 +44,7 @@ export interface ProductStyles {
   padding: string;
   gap: string;
   maxWidth: string;
-  layout?: 'grid';
+  layout: string;
   gridColumns: number;
   containerPadding: string;
   fontFamily: string;
@@ -68,6 +68,7 @@ export interface ProductsProps {
   isEditing?: boolean;
   onStartEdit?: () => void;
   onSave?: () => void;
+  onCloseSidebar?: () => void;
   savedItems?: ProductItem[] | null;
   savedStyles?: ProductStyles | null;
   apiKey?: string;
@@ -76,11 +77,11 @@ export interface ProductsProps {
   onAIConfigUpdate?: (newConfig: WebsiteConfig) => void;
 }
 
-export interface WebsiteConfig extends BaseWebsiteConfig {
+export interface WebsiteConfig extends Omit<BaseWebsiteConfig, 'productsConfig'> {
   productsConfig?: {
     items: ProductItem[];
     styles: ProductStyles;
-  };
+  } | null;
 }
 
 export interface SortableProductItemProps {
