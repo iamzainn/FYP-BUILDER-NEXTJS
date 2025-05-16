@@ -11,7 +11,7 @@ export default function SortableCollectionItem({
   isEditing, 
   isSelected, 
   onSelect,
-  globalStyles,
+  
   onImageUpload 
 }: SortableCollectionItemProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);

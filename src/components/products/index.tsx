@@ -1,5 +1,5 @@
 'use client';
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import { DragEndEvent } from '@dnd-kit/core';
 import ProductsMain from './ProductsMain';

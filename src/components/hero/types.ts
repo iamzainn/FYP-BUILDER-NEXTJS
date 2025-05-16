@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface HeroItem {
   id: string;
   type: 'heading' | 'subheading' | 'button' | 'image' | 'badge' | 'paragraph';

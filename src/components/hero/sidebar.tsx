@@ -1,6 +1,6 @@
 import AIChat from '../AIChat';
-import Image from 'next/image';
-import { useState, useRef } from 'react';
+
+
 import { HeroItem, HeroStyles, WebsiteConfig, fontFamilies } from './types';
 import { UploadButton } from '@/utils/uploadthing';
 
@@ -56,7 +56,7 @@ export const HeroSidebar: React.FC<HeroSidebarProps> = ({
   if (!isEditing) return null;
   
   // Local state for file upload
-  const [isUploading, setIsUploading] = useState(false);
+  
 
   // Update the handleAddItem function
   const handleAddItem = (type: string) => {

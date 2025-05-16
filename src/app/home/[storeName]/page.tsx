@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { pageService } from '@/services/pageService';
 import { NavItem, NavbarStyles, HeroItem, HeroStyles, CollectionItem, CollectionStyles, ProductItem, ProductStyles, FooterColumn, FooterStyles, SocialLink } from '@/types/websiteConfig';
 
@@ -62,7 +62,7 @@ interface ComponentsData {
 
 export default function Home() {
   const params = useParams();
-  const router = useRouter();
+  
   const storeName = params?.storeName as string;
   
   const [isLoading, setIsLoading] = useState(true);

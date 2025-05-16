@@ -1,12 +1,12 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useTransition, Suspense } from 'react';
+import { useState, useEffect} from 'react';
 import dynamic from 'next/dynamic';
-import { useParams, useRouter } from 'next/navigation';
-import { NavItem, NavbarStyles, HeroItem, HeroStyles, CollectionItem, CollectionStyles, ProductItem, ProductStyles, WebsiteConfig, FooterColumn, FooterStyles, SocialLink } from '@/types/websiteConfig';
+import { useParams} from 'next/navigation';
+import { NavItem, NavbarStyles, HeroItem, HeroStyles, CollectionItem, CollectionStyles, ProductItem, ProductStyles, FooterColumn, FooterStyles, SocialLink } from '@/types/websiteConfig';
 import { pageService, Page } from '@/services/pageService';
-import { MongoDBApiService } from '@/services/mondodbapi';
+
 const Footer = dynamic(() => import('@/components/footer'), { ssr: false });
 
 // Dynamically import components with ssr:false to prevent them from loading during server-side rendering
@@ -67,7 +67,7 @@ interface ComponentsData {
 
 export default function Editor() {
   const params = useParams();
-  const router = useRouter();
+
   const storeName = params?.storeName as string;
   
   const [editingComponent, setEditingComponent] = useState<EditableComponent>(null);
@@ -439,33 +439,7 @@ export default function Editor() {
   };
   
   // Helper function to update individual component states from central data
-  const updateComponentStatesFromCentralData = (components: ComponentsData) => {
-    if (components.navbar) {
-      setNavItems(components.navbar.items || null);
-      setNavStyles(components.navbar.styles || null);
-    }
-    
-    if (components.hero) {
-      setHeroItems(components.hero.items || null);
-      setHeroStyles(components.hero.styles || null);
-    }
-    
-    if (components.collection) {
-      setCollectionItems(components.collection.items || null);
-      setCollectionStyles(components.collection.styles || null);
-    }
-    
-    if (components.product) {
-      setProductItems(components.product.items || null);
-      setProductStyles(components.product.styles || null);
-    }
-    
-    if (components.footer) {
-      setFooterColumns(components.footer.columns || null);
-      setFooterStyles(components.footer.styles || null);
-      setFooterSocialLinks(components.footer.socialLinks || null);
-    }
-  };
+  
 
   const dismissWelcome = () => {
     setShowWelcome(false);
@@ -774,7 +748,7 @@ export default function Editor() {
                     <div>
                       <h5 className="font-semibold text-blue-700 dark:text-blue-300 text-sm mb-1">PRO TIP</h5>
                       <p className="text-gray-700 dark:text-gray-300 text-sm">
-                        Try asking specific questions like <span className="font-mono bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">"Create a modern hero section for my tech startup"</span> or <span className="font-mono bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">"Suggest a color scheme for a luxury brand"</span>
+                        Try asking specific questions like <span className="font-mono bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">&quot;Create a modern hero section for my tech startup&quot;</span> or <span className="font-mono bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">&quot;Suggest a color scheme for a luxury brand&quot;</span>
                       </p>
                     </div>
                   </div>

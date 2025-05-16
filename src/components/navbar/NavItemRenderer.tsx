@@ -1,5 +1,5 @@
 'use client';
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link';
 import { NavItem, NavbarStyles } from './types';
 
@@ -13,7 +13,7 @@ interface NavItemRendererProps {
 export default function NavItemRenderer({ 
   item, 
   isEditing, 
-  globalStyles,
+  
   onSelect 
 }: NavItemRendererProps) {
   const { id, type, label, link, imageUrl, styles = {} } = item;

@@ -1,10 +1,10 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect, useRef } from 'react';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { arrayMove } from '@dnd-kit/sortable';
 import HeroMain from './HeroMain';
 import HeroSidebar from './sidebar';
-import { HeroItem, HeroStyles, HeroProps, WebsiteConfig, defaultHeroItems, defaultHeroStyles } from './types';
+import { HeroItem, HeroStyles, HeroProps,  defaultHeroItems, defaultHeroStyles } from './types';
 
 export default function Hero({ 
   isAdmin = false, 
@@ -68,38 +68,7 @@ export default function Hero({
   };
 
   // Add function to handle changes from AI
-  const handleAIConfigUpdate = (newConfig: WebsiteConfig) => {
-    console.log("Received AI config update:", newConfig);
-    
-    if (newConfig?.heroConfig) {
-      const { items, styles } = newConfig.heroConfig;
-      
-      // Update local state
-      if (items) {
-        console.log("Updating hero items from AI:", items);
-        setHeroItems(JSON.parse(JSON.stringify(items)));
-      }
-      
-      if (styles) {
-        console.log("Updating hero styles from AI:", styles);
-        setHeroStyles(JSON.parse(JSON.stringify(styles)));
-      }
-      
-      // Notify parent component of changes if callbacks provided
-      if (items && onItemsChange) {
-        onItemsChange(items);
-      }
-      
-      if (styles && onStylesChange) {
-        onStylesChange(styles);
-      }
-      
-      // If onAIConfigUpdate is provided, call it after handling local updates
-      if (onAIConfigUpdate) {
-        onAIConfigUpdate(newConfig);
-      }
-    }
-  };
+ 
 
   // Add direct save function
   const handleDirectSave = async () => {

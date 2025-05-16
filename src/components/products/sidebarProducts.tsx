@@ -1,25 +1,19 @@
 import React, { useState, useEffect } from 'react';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import AIChat from '../AIChat';
-import AIChat from '../AIChat';
-import { ProductItem, ProductStyles, WebsiteConfig, SidebarProductsProps } from './types';
+
+import {   SidebarProductsProps } from './types';
 
 const SidebarProducts: React.FC<SidebarProductsProps> = ({
   isEditing,
-  selectedItem,
-  productItems,
+  
   productStyles,
   handleSave,
-  addNewProduct,
-  updateProductDetails,
-  updateProductStyle,
-  updateAllProductsStyle,
+  
   updateGlobalStyle,
-  deleteProduct,
-  apiKey,
-  handleAIConfigUpdate,
-  onItemsChange,
-  onStylesChange,
+ 
+  
+  
   onCloseSidebar
 }) => {
   const [activeTab, setActiveTab] = useState<'global' | 'individual'>('global');
@@ -32,10 +26,7 @@ const SidebarProducts: React.FC<SidebarProductsProps> = ({
   }, [productStyles]);
 
   // Create a wrapper function for the updateGlobalStyle that includes logging
-  const updateStyleWithLog = (styleKey: string, value: string | number | Record<string, string>) => {
-    console.log(`Updating style: ${styleKey} with value:`, value);
-    updateGlobalStyle(styleKey, value);
-  };
+  
 
   const renderInputField = (
     label: string,
@@ -191,26 +182,7 @@ const SidebarProducts: React.FC<SidebarProductsProps> = ({
     );
   };
 
-  const handleAIUpdate = (newConfig: any) => {
-    console.log('New config from AI in SidebarProducts:', newConfig);
-    
-    if (newConfig && newConfig.productsConfig) {
-      // Make deep clones to avoid reference issues
-      const productsConfig = JSON.parse(JSON.stringify(newConfig.productsConfig));
-      
-      // Call the parent's AI config update handler
-      handleAIConfigUpdate(newConfig as WebsiteConfig);
-      
-      // Directly update local state if required
-      if (onItemsChange && productsConfig.items) {
-        onItemsChange(productsConfig.items);
-      }
-      
-      if (onStylesChange && productsConfig.styles) {
-        onStylesChange(productsConfig.styles);
-      }
-    }
-  };
+  
 
   // Margin Control Component
   const MarginControl = ({ 

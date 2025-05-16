@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { WebsiteConfig as BaseWebsiteConfig } from '../../types/websiteConfig';
 
 export interface ProductItem {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState} from 'react';
 import { useRouter } from 'next/navigation';
 import { AIService } from '../../services/aiService';
 
@@ -22,7 +22,7 @@ export default function SetupPage() {
   });
 
   const [step, setStep] = useState(1);
-  const [isUploading, setIsUploading] = useState(false);
+ 
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleSubmit = async () => {

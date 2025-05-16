@@ -1,5 +1,5 @@
 'use client';
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import CollectionMain from './CollectionMain';
 import SidebarCollection from './sidebarCollection';
@@ -24,6 +24,7 @@ export default function Collection({
   const [isMobile, setIsMobile] = useState<boolean>(false);
   
   useEffect(() => {
+    console.log('Collection component mounted',isMobile);
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 640);
     };
