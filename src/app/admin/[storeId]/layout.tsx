@@ -45,7 +45,7 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
       <div className="flex h-screen overflow-hidden bg-background">
         <AdminSidebar storeId={storeId} storeName={store.storeName} />
         <div className="flex-1 overflow-y-auto relative">
-          <div className="absolute top-4 right-4 z-50">
+          <div className="absolute top-2 right-4 z-50">
             <NotificationListener storeId={storeId} />
           </div>
           <main className="p-6 pt-14 md:p-8 md:pt-16 h-full max-w-7xl mx-auto">
