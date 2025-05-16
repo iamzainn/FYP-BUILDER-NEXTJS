@@ -13,7 +13,7 @@ interface ComponentContent {
 
 export async function GET(
   request: NextRequest,
-  context: { params: { storeName: string } }
+  context: { params: Promise<{ storeName: string }> }
 ) {
   try {
     // In Next.js 14/15, we must await params directly before destructuring

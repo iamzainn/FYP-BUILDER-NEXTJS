@@ -13,7 +13,7 @@ interface ComponentContent {
 // GET a specific page component by ID
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // In Next.js 14/15, we must await params directly before destructuring
@@ -74,7 +74,7 @@ export async function GET(
 // Update a component directly by ID (no auth required - as requested)
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // In Next.js 14/15, we must await params directly before destructuring

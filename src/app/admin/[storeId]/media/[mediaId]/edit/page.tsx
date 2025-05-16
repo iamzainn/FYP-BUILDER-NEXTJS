@@ -5,10 +5,16 @@ import { Separator } from "@/components/ui/separator";
 import MediaEditForm from "@/components/admin/MediaEditForm";
 
 interface EditMediaPageProps {
-  params: { storeId: string; mediaId: string };
+  params: Promise<{ storeId: string; mediaId: string }>;
 }
 
 export default async function EditMediaPage({ params }: EditMediaPageProps) {
+  'use server';
+  
+  // Await the params to avoid Next.js 15 warning
+  const { storeId, mediaId } = await params;
+  console.log(storeId, mediaId);
+  
   const { userId: clerkId } = await auth();
   
   if (!clerkId) {
@@ -18,7 +24,7 @@ export default async function EditMediaPage({ params }: EditMediaPageProps) {
   // Get the user store
   const store = await prisma.userStore.findFirst({
     where: {
-      storeId: params.storeId,
+      storeId,
       user: {
         clerkId
       }
@@ -32,13 +38,13 @@ export default async function EditMediaPage({ params }: EditMediaPageProps) {
   // Get the media item
   const media = await prisma.media.findFirst({
     where: {
-      id: parseInt(params.mediaId),
+      id: parseInt(mediaId),
       storeId: store.id
     }
   });
   
   if (!media) {
-    redirect(`/admin/${params.storeId}/media`);
+    redirect(`/admin/${storeId}/media`);
   }
   
   return (
@@ -53,7 +59,7 @@ export default async function EditMediaPage({ params }: EditMediaPageProps) {
       <Separator />
       
       <MediaEditForm 
-        storeId={params.storeId} 
+        storeId={storeId} 
         media={media} 
       />
     </div>

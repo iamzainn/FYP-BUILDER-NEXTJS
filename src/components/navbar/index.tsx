@@ -11,12 +11,14 @@ interface NavbarProps {
   isEditing?: boolean;
   onSave?: () => void;
   apiKey?: string;
+  isAdmin?: boolean;
   savedItems?: NavItem[] | null;
   savedStyles?: NavbarStyles | null;
   onItemsChange?: (items: NavItem[]) => void;
   onStylesChange?: (styles: NavbarStyles) => void;
   onAIConfigUpdate?: (newConfig: WebsiteConfig) => void;
   onClose?: () => void;
+  onStartEdit?: () => void;
 }
 
 export default function Navbar({

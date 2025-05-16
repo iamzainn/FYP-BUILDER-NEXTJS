@@ -5,11 +5,13 @@ import { Separator } from "@/components/ui/separator";
 import MediaForm from "@/components/admin/MediaForm";
 
 interface NewMediaPageProps {
-  params: { storeId: string };
+  params: Promise<{ storeId: string }>;
 }
 
 export default async function NewMediaPage({ params }: NewMediaPageProps) {
+  const { storeId } = await params;
   const { userId: clerkId } = await auth();
+
   
   if (!clerkId) {
     redirect("/sign-in");
@@ -18,7 +20,7 @@ export default async function NewMediaPage({ params }: NewMediaPageProps) {
   // Get the user store ID
   const store = await prisma.userStore.findFirst({
     where: {
-      storeId: params.storeId,
+      storeId,
       user: {
         clerkId
       }
@@ -40,7 +42,7 @@ export default async function NewMediaPage({ params }: NewMediaPageProps) {
       
       <Separator />
       
-      <MediaForm storeId={params.storeId} />
+      <MediaForm storeId={storeId} />
     </div>
   );
 } 
