@@ -4,7 +4,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { HeroItem, HeroStyles, SortableItemProps } from './types';
+import { SortableItemProps } from './types';
 
 export default function SortableItem({ 
   item, 

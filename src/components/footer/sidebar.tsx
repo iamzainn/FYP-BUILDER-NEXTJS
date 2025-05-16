@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { WebsiteConfig, FooterColumn, FooterLink, FooterStyles, SocialLink, FooterConfig } from '@/types/websiteConfig';
+import { WebsiteConfig, FooterColumn, FooterLink, FooterStyles, SocialLink } from '@/types/websiteConfig';
 
 interface FooterSidebarProps {
   isEditing: boolean;
@@ -57,7 +57,7 @@ const FooterSidebar: React.FC<FooterSidebarProps> = ({
   setSocialLinks,
   setFooterStyles,
   apiKey,
-  handleAIConfigUpdate,
+  // handleAIConfigUpdate, // Commented out since it's currently unused
   useDirectSave,
   componentId,
   isSaving = false
@@ -70,55 +70,58 @@ const FooterSidebar: React.FC<FooterSidebarProps> = ({
   const [newLinkLabel, setNewLinkLabel] = useState('');
   const [newLinkHref, setNewLinkHref] = useState('/');
   
+  // Move the useEffect outside of the conditional return
+  useEffect(() => {
+    if (isEditing) {
+      console.log("FooterSidebar loaded with props:", {
+        columnsCount: footerColumns.length,
+        hasStyles: Object.keys(footerStyles).length > 0,
+        socialLinksCount: socialLinks.length,
+        useDirectSave,
+        componentId
+      });
+    }
+  }, [isEditing, footerColumns.length, footerStyles, socialLinks.length, useDirectSave, componentId]);
+
   if (!isEditing) return null;
   
-  useEffect(() => {
-    console.log("FooterSidebar loaded with props:", {
-      columnsCount: footerColumns.length,
-      hasStyles: Object.keys(footerStyles).length > 0,
-      socialLinksCount: socialLinks.length,
-      useDirectSave,
-      componentId
-    });
-  }, []);
-
   // Handler for AI config updates - improved with deep cloning
-  const handleFooterAIUpdate = (newConfig: any) => {
-    console.log('Received AI config update in sidebar:', JSON.stringify(newConfig, null, 2));
+  // const handleFooterAIUpdate = (newConfig: any) => {
+  //   console.log('Received AI config update in sidebar:', JSON.stringify(newConfig, null, 2));
     
-    if (newConfig.footerConfig && handleAIConfigUpdate) {
-      // Create deep copies of all data before processing
-      const processedConfig: WebsiteConfig = {
-        footerConfig: newConfig.footerConfig.columns || newConfig.footerConfig.styles || newConfig.footerConfig.socialLinks ? {
-          columns: newConfig.footerConfig.columns ? JSON.parse(JSON.stringify(newConfig.footerConfig.columns)) : [],
-          styles: newConfig.footerConfig.styles ? JSON.parse(JSON.stringify(newConfig.footerConfig.styles)) : footerStyles,
-          socialLinks: newConfig.footerConfig.socialLinks ? JSON.parse(JSON.stringify(newConfig.footerConfig.socialLinks)) : []
-        } : null
-      };
+  //   if (newConfig.footerConfig && handleAIConfigUpdate) {
+  //     // Create deep copies of all data before processing
+  //     const processedConfig: WebsiteConfig = {
+  //       footerConfig: newConfig.footerConfig.columns || newConfig.footerConfig.styles || newConfig.footerConfig.socialLinks ? {
+  //         columns: newConfig.footerConfig.columns ? JSON.parse(JSON.stringify(newConfig.footerConfig.columns)) : [],
+  //         styles: newConfig.footerConfig.styles ? JSON.parse(JSON.stringify(newConfig.footerConfig.styles)) : footerStyles,
+  //         socialLinks: newConfig.footerConfig.socialLinks ? JSON.parse(JSON.stringify(newConfig.footerConfig.socialLinks)) : []
+  //       } : null
+  //     };
       
-      console.log('Passing processed config to parent handleAIConfigUpdate');
-      handleAIConfigUpdate(processedConfig);
+  //     console.log('Passing processed config to parent handleAIConfigUpdate');
+  //     handleAIConfigUpdate(processedConfig);
       
-      // Also update local state if needed
-      if (newConfig.footerConfig.columns && setFooterColumns) {
-        const columnsCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.columns));
-        console.log('Updating local columns state with deep copy:', columnsCopy);
-        setFooterColumns(columnsCopy);
-      }
+  //     // Also update local state if needed
+  //     if (newConfig.footerConfig.columns && setFooterColumns) {
+  //       const columnsCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.columns));
+  //       console.log('Updating local columns state with deep copy:', columnsCopy);
+  //       setFooterColumns(columnsCopy);
+  //     }
       
-      if (newConfig.footerConfig.styles && setFooterStyles) {
-        const stylesCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.styles));
-        console.log('Updating local styles state with deep copy:', stylesCopy);
-        setFooterStyles(stylesCopy);
-      }
+  //     if (newConfig.footerConfig.styles && setFooterStyles) {
+  //       const stylesCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.styles));
+  //       console.log('Updating local styles state with deep copy:', stylesCopy);
+  //       setFooterStyles(stylesCopy);
+  //     }
       
-      if (newConfig.footerConfig.socialLinks && setSocialLinks) {
-        const socialLinksCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.socialLinks));
-        console.log('Updating local social links state with deep copy:', socialLinksCopy);
-        setSocialLinks(socialLinksCopy);
-      }
-    }
-  };
+  //     if (newConfig.footerConfig.socialLinks && setSocialLinks) {
+  //       const socialLinksCopy = JSON.parse(JSON.stringify(newConfig.footerConfig.socialLinks));
+  //       console.log('Updating local social links state with deep copy:', socialLinksCopy);
+  //       setSocialLinks(socialLinksCopy);
+  //     }
+  //   }
+  // };
 
   // Handler to update footer styles - improved with deep cloning
   const updateFooterStyle = (key: string, value: string | boolean) => {

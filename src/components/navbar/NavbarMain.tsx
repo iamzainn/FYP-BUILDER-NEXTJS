@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+
 import { NavItem, NavbarStyles } from './types';
 import NavItemRenderer from './NavItemRenderer';
 

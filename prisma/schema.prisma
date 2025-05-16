@@ -42,12 +42,12 @@ model UserStore {
   pages           Page[]
   paymentGateways PaymentGateway[]
   notifications   Notification[]
+  Media           Media[]
   feedback        CustomerFeedback[]
 
   @@unique([userId, storeName], map: "user_id")
   @@index([userId], map: "idx_user_id")
   @@map("user_stores")
-  Media Media[]
 }
 
 model Category {
@@ -282,7 +282,7 @@ model Media {
   title       String    @db.VarChar(255)
   description String?   @db.Text
   url         String    @db.VarChar(255)
-  fileKey     String    @db.VarChar(255) // For deletion purposes
+  fileKey     String    @db.VarChar(255)
   mediaType   MediaType @default(IMAGE)
   storeId     Int       @map("store_id")
   createdAt   DateTime  @default(now()) @map("created_at") @db.DateTime(0)

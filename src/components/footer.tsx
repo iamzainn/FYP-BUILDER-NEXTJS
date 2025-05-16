@@ -1,10 +1,10 @@
 'use client';
-
-import { useState, useEffect, useRef, useCallback } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import React from 'react';
 import FooterSidebar from './footer/sidebar';
-import { WebsiteConfig, FooterColumn, FooterLink, FooterStyles, SocialLink } from '@/types/websiteConfig';
+import { WebsiteConfig, FooterColumn,  FooterStyles, SocialLink } from '@/types/websiteConfig';
 
 interface FooterProps {
   componentId?: number;
@@ -124,7 +124,7 @@ const Footer: React.FC<FooterProps> = ({
   onColumnsChange,
   onStylesChange,
   onSocialLinksChange,
-  onAIConfigUpdate,
+  
   componentId,
   useDirectSave = false
 }) => {
@@ -454,85 +454,16 @@ const Footer: React.FC<FooterProps> = ({
   };
 
   // Update column data
-  const updateColumn = (columnId: string, newData: Partial<FooterColumn>) => {
-    console.log(`Updating column ${columnId} with:`, newData);
-    
-    // Create a deep copy of the columns to avoid reference issues
-    const updatedColumns = JSON.parse(JSON.stringify(
-      columns.map(col => col.id === columnId ? { ...col, ...newData } : col)
-    ));
-    
-    // Update local state
-    setColumns(updatedColumns);
-    
-    // Notify parent of changes
-    if (onColumnsChange) {
-      console.log('Notifying parent of column changes');
-      onColumnsChange(updatedColumns);
-    }
-  };
+ 
   
   // Update link data
-  const updateLink = (columnId: string, linkId: string, newData: Partial<FooterLink>) => {
-    console.log(`Updating link ${linkId} in column ${columnId} with:`, newData);
-    
-    // Create a deep copy and update the specific link
-    const updatedColumns = JSON.parse(JSON.stringify(columns.map(col => {
-      if (col.id === columnId) {
-        const updatedLinks = col.links.map(link => 
-          link.id === linkId ? { ...link, ...newData } : link
-        );
-        return { ...col, links: updatedLinks };
-      }
-      return col;
-    })));
-    
-    // Update local state
-    setColumns(updatedColumns);
-    
-    // Notify parent of changes
-    if (onColumnsChange) {
-      console.log('Notifying parent of link changes');
-      onColumnsChange(updatedColumns);
-    }
-  };
+  
   
   // Update social link
-  const updateSocialLink = (linkId: string, newData: Partial<SocialLink>) => {
-    console.log(`Updating social link ${linkId} with:`, newData);
-    
-    // Create a deep copy and update the specific social link
-    const updatedLinks = JSON.parse(JSON.stringify(
-      socialLinks.map(link => link.id === linkId ? { ...link, ...newData } : link)
-    ));
-    
-    // Update local state
-    setSocialLinks(updatedLinks);
-    
-    // Notify parent of changes
-    if (onSocialLinksChange) {
-      console.log('Notifying parent of social link changes');
-      onSocialLinksChange(updatedLinks);
-    }
-  };
+ 
   
   // Update footer styles
-  const updateFooterStyle = (styleKey: string, value: any) => {
-    console.log(`Updating footer style ${styleKey} to:`, value);
-    
-    // Create a deep copy of the styles to avoid reference issues
-    const updatedStyles = JSON.parse(JSON.stringify({ ...footerStyles, [styleKey]: value }));
-    
-    // Update local state
-    setFooterStyles(updatedStyles);
-    
-    // Notify parent of changes
-    if (onStylesChange) {
-      console.log('Notifying parent of style changes');
-      onStylesChange(updatedStyles);
-    }
-  };
-
+  
   return (
     <footer 
       style={{

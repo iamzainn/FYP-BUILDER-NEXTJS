@@ -1,7 +1,7 @@
 'use client';
 
-import { UploadButton } from '@/utils/uploadthing';
-import { NavItem, NavbarStyles, fontFamilies } from './types';
+
+import { NavItem, NavbarStyles} from './types';
 import ImageSettings from './editor/ImageSettings';
 import TextSettings from './editor/TextSettings';
 import StyleSettings from './editor/StyleSettings';

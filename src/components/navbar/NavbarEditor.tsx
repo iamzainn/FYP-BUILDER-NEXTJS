@@ -1,12 +1,12 @@
 'use client';
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AIChat from '../AIChat';
-import { UploadButton } from '@/utils/uploadthing';
+
 import { 
   NavItem, 
   NavbarStyles, 
-  WebsiteConfig,
-  fontFamilies
+  WebsiteConfig
+
 } from './types';
 import ItemEditor from './ItemEditor';
 import GlobalStylesEditor from './GlobalStylesEditor';
@@ -15,7 +15,7 @@ interface NavbarEditorProps {
   navItems: NavItem[];
   navStyles: NavbarStyles;
   selectedItem: string | null;
-  setSelectedItem: (id: string | null) => void;
+  
   showTooltip: boolean;
   setShowTooltip: (show: boolean) => void;
   isSaving: boolean;
@@ -37,7 +37,7 @@ export default function NavbarEditor({
   navItems,
   navStyles,
   selectedItem,
-  setSelectedItem,
+  
   showTooltip,
   setShowTooltip,
   isSaving,

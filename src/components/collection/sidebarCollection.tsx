@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import AIChat from '../AIChat';
-import { CollectionItem, CollectionStyles, WebsiteConfig, SidebarCollectionProps } from './types';
+import {  SidebarCollectionProps } from './types';
 
 const SidebarCollection: React.FC<SidebarCollectionProps> = ({
   isEditing,
