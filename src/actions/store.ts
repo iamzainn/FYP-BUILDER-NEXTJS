@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+
 
 import prisma from "@/lib/prisma";
 import { getUserDbId, generateSubdomain } from "@/lib/fn";
@@ -173,10 +173,10 @@ export async function deleteStore(storeId: string) {
     });
     
     // Redirect to dashboard after deletion
-    redirect("/dashboard");
+    return { success: true };
     
     // This will only execute if redirect fails
-    return { success: true };
+    
   } catch (error) {
     console.error("Failed to delete store:", error);
     return { success: false, error: "Failed to delete store" };

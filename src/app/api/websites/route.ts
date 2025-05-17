@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
-
+import { auth } from "@clerk/nextjs/server";
 export async function POST(request: NextRequest) {
   try {
     // Get the authenticated user from Clerk using currentUser
-    const user = await currentUser();
-    console.log("user clerk ", user);
+    const { userId } = await auth();
+    console.log("user clerk ID ", userId);
+  
     
-    if (!user || !user.id) {
+    if (!userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     
     // Find the user in the database using clerkId
     const dbUser = await prisma.user.findUnique({
       where: {
-        clerkId: user.id
+        clerkId: userId
       }
     });
     

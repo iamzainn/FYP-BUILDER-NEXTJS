@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
 
 import { deleteStore } from "@/actions/store";
+import { useRouter } from "next/navigation";
+
 
 interface DeleteStoreButtonProps {
   storeId: string;
@@ -26,6 +28,7 @@ interface DeleteStoreButtonProps {
 export default function DeleteStoreButton({ storeId }: DeleteStoreButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   
   const onDelete = async () => {
     setIsLoading(true);
@@ -33,11 +36,15 @@ export default function DeleteStoreButton({ storeId }: DeleteStoreButtonProps) {
     try {
       // Note: This will redirect to the dashboard if successful
       const response = await deleteStore(storeId);
+      console.log(response);
+      
       
       if (!response.success) {
         toast.error(response.error || "Failed to delete store");
         setOpen(false);
       }
+      router.replace("/dashboard");
+
     } catch (error) {
       toast.error("Something went wrong");
       console.error(error);
